@@ -12,7 +12,7 @@
             --primary: #6366f1; --primary-dark: #4f46e5; --primary-light: #818cf8;
             --bg: #0f0f1a; --bg-card: #1a1a2e; --bg-hover: #252542;
             --text: #e2e8f0; --text-muted: #94a3b8; --border: #2d2d44;
-            --success: #10b981; --error: #ef4444;
+            --success: #10b981; --error: #ef4444; --warning: #f59e0b;
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
         .bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
@@ -50,6 +50,8 @@
         .link-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
         .link-box input { flex: 1; background: transparent; border: none; color: var(--text); font-size: 0.85rem; font-family: monospace; outline: none; }
         .link-box button { padding: 0.4rem 0.8rem; border-radius: 6px; border: none; background: var(--primary); color: white; cursor: pointer; font-size: 0.8rem; }
+        .link-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem; }
+        .link-label strong { color: var(--primary-light); }
         .share-buttons { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem; }
         .share-btn { width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; }
         .share-btn:hover { background: var(--primary); color: white; }
@@ -63,6 +65,7 @@
         .toast.show { transform: translateY(0); opacity: 1; }
         .toast.success { border-color: var(--success); }
         .toast.error { border-color: var(--error); }
+        .warning-box { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.8rem; color: var(--warning); }
         @media (max-width: 768px) { .config-grid { grid-template-columns: 1fr; } .hero h1 { font-size: 1.8rem; } }
     </style>
 <base target="_blank">
@@ -75,7 +78,7 @@
     <div class="container">
         <div class="hero">
             <h1>Hospede suas imagens</h1>
-            <p>Upload real para GitHub Pages. Links funcionais!</p>
+            <p>Upload real para GitHub. Links que funcionam imediatamente!</p>
         </div>
 
         <div class="config-section">
@@ -85,7 +88,7 @@
                 <input type="text" class="config-input" id="githubRepo" value="Imagem-URL" readonly>
             </div>
             <p style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.5rem;">
-                <i class="fas fa-info-circle"></i> Token em <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--primary-light);">github.com/settings/tokens</a> | Repo: Imagem-URL | Pasta: img/
+                <i class="fas fa-info-circle"></i> Token em <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--primary-light);">github.com/settings/tokens</a> | Repo: Imagem-URL
             </p>
             <button class="btn btn-primary" style="margin-top: 0.75rem;" id="saveConfigBtn">
                 <i class="fas fa-save"></i> Salvar Configuracao
@@ -129,23 +132,39 @@
         <div class="result-section" id="resultSection">
             <div class="success-icon"><i class="fas fa-check"></i></div>
             <h3 style="text-align: center;">Upload Concluido!</h3>
-            <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Aguarde 1-2 min para o GitHub Pages atualizar.</p>
+
+            <div class="warning-box">
+                <i class="fas fa-clock"></i> <strong>Link Principal (GitHub Raw):</strong> Funciona imediatamente!<br>
+                <i class="fas fa-hourglass-half"></i> <strong>Link GitHub Pages:</strong> Pode levar 1-5 minutos para ativar.
+            </div>
+
+            <div class="link-label"><strong>Link Direto (Funciona Agora):</strong></div>
+            <div class="link-box">
+                <i class="fas fa-bolt" style="color: var(--success);"></i>
+                <input type="text" id="rawLink" readonly>
+                <button id="copyRawBtn"><i class="fas fa-copy"></i></button>
+            </div>
+
+            <div class="link-label"><strong>Link GitHub Pages (Aguarde):</strong></div>
             <div class="link-box">
                 <i class="fas fa-link" style="color: var(--primary-light);"></i>
                 <input type="text" id="publicLink" readonly>
                 <button id="copyLinkBtn"><i class="fas fa-copy"></i></button>
             </div>
+
+            <div class="link-label"><strong>Codigo HTML:</strong></div>
             <div class="link-box">
                 <i class="fas fa-code" style="color: var(--primary-light);"></i>
                 <input type="text" id="htmlLink" readonly>
                 <button id="copyHtmlBtn"><i class="fas fa-copy"></i></button>
             </div>
+
             <div class="share-buttons">
                 <button class="share-btn" id="twitterBtn" title="Twitter"><i class="fab fa-twitter"></i></button>
                 <button class="share-btn" id="facebookBtn" title="Facebook"><i class="fab fa-facebook-f"></i></button>
                 <button class="share-btn" id="whatsappBtn" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
                 <button class="share-btn" id="emailBtn" title="Email"><i class="fas fa-envelope"></i></button>
-                <button class="share-btn" id="openLinkBtn" title="Abrir"><i class="fas fa-external-link-alt"></i></button>
+                <button class="share-btn" id="openRawBtn" title="Abrir Link Direto"><i class="fas fa-external-link-alt"></i></button>
             </div>
             <button class="btn btn-secondary" style="width: 100%; margin-top: 1rem; justify-content: center;" id="newUploadBtn">
                 <i class="fas fa-plus"></i> Nova Imagem
@@ -171,12 +190,12 @@
         var GITHUB_REPO = 'Imagem-URL';
         var currentFile = null;
         var currentImageData = null;
+        var currentRawUrl = '';
         var currentPublicUrl = '';
         var uploadHistory = JSON.parse(localStorage.getItem('imageHostHistory') || '[]');
 
         var el = {
             token: document.getElementById('githubToken'),
-            repo: document.getElementById('githubRepo'),
             saveConfigBtn: document.getElementById('saveConfigBtn'),
             uploadZone: document.getElementById('uploadZone'),
             chooseFileBtn: document.getElementById('chooseFileBtn'),
@@ -193,15 +212,17 @@
             progressText: document.getElementById('progressText'),
             progressPercent: document.getElementById('progressPercent'),
             resultSection: document.getElementById('resultSection'),
+            rawLink: document.getElementById('rawLink'),
             publicLink: document.getElementById('publicLink'),
             htmlLink: document.getElementById('htmlLink'),
+            copyRawBtn: document.getElementById('copyRawBtn'),
             copyLinkBtn: document.getElementById('copyLinkBtn'),
             copyHtmlBtn: document.getElementById('copyHtmlBtn'),
             twitterBtn: document.getElementById('twitterBtn'),
             facebookBtn: document.getElementById('facebookBtn'),
             whatsappBtn: document.getElementById('whatsappBtn'),
             emailBtn: document.getElementById('emailBtn'),
-            openLinkBtn: document.getElementById('openLinkBtn'),
+            openRawBtn: document.getElementById('openRawBtn'),
             newUploadBtn: document.getElementById('newUploadBtn'),
             historyGrid: document.getElementById('historyGrid'),
             toast: document.getElementById('toast'),
@@ -221,20 +242,19 @@
             el.uploadZone.addEventListener('click', function() { el.fileInput.click(); });
             el.uploadBtn.addEventListener('click', startUpload);
             el.cancelBtn.addEventListener('click', clearSelection);
+            el.copyRawBtn.addEventListener('click', copyRaw);
             el.copyLinkBtn.addEventListener('click', copyLink);
             el.copyHtmlBtn.addEventListener('click', copyHtml);
             el.twitterBtn.addEventListener('click', function() { share('twitter'); });
             el.facebookBtn.addEventListener('click', function() { share('facebook'); });
             el.whatsappBtn.addEventListener('click', function() { share('whatsapp'); });
             el.emailBtn.addEventListener('click', function() { share('email'); });
-            el.openLinkBtn.addEventListener('click', function() { window.open(currentPublicUrl, '_blank'); });
+            el.openRawBtn.addEventListener('click', function() { window.open(currentRawUrl, '_blank'); });
             el.newUploadBtn.addEventListener('click', clearSelection);
-
-            // Event delegation para o historico
             el.historyGrid.addEventListener('click', function(e) {
                 var item = e.target.closest('.history-item');
                 if (item) {
-                    var url = item.getAttribute('data-url');
+                    var url = item.getAttribute('data-raw');
                     if (url) window.open(url, '_blank');
                 }
             });
@@ -345,26 +365,41 @@
                     throw new Error(error.message || 'Erro no upload');
                 }
 
-                updateProgress(80, 'Processando...');
+                updateProgress(80, 'Gerando links...');
+
+                // Link GitHub Raw - funciona IMEDIATAMENTE
+                currentRawUrl = 'https://raw.githubusercontent.com/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/main/' + path;
+
+                // Link GitHub Pages - pode demorar
                 currentPublicUrl = 'https://' + GITHUB_OWNER + '.github.io/Imagem-URL/imagem/' + fileName;
 
                 var historyItem = {
                     id: randomId, name: currentFile.name, size: currentFile.size,
-                    url: currentPublicUrl, data: currentImageData, date: new Date().toISOString()
+                    rawUrl: currentRawUrl, publicUrl: currentPublicUrl, 
+                    data: currentImageData, date: new Date().toISOString()
                 };
                 uploadHistory.unshift(historyItem);
                 if (uploadHistory.length > 20) uploadHistory.pop();
                 localStorage.setItem('imageHostHistory', JSON.stringify(uploadHistory));
 
-                updateProgress(100, 'Concluido!');
-                setTimeout(function() {
-                    el.uploadProgress.classList.remove('active');
-                    el.resultSection.classList.add('active');
-                    el.publicLink.value = currentPublicUrl;
-                    el.htmlLink.value = '<img src="' + currentPublicUrl + '" alt="' + currentFile.name + '" />';
-                    updateHistoryDisplay();
-                    showToast('Upload concluido! Aguarde 1-2 min.', 'success');
-                }, 500);
+                updateProgress(100, 'Upload completo!');
+
+                // Aguardar 20s para GitHub Pages propagar
+                var secondsLeft = 20;
+                var countdownInterval = setInterval(function() {
+                    secondsLeft--;
+                    updateProgress(100, 'Aguardando propagacao... ' + secondsLeft + 's');
+                    if (secondsLeft <= 0) {
+                        clearInterval(countdownInterval);
+                        el.uploadProgress.classList.remove('active');
+                        el.resultSection.classList.add('active');
+                        el.rawLink.value = currentRawUrl;
+                        el.publicLink.value = currentPublicUrl;
+                        el.htmlLink.value = '<img src="' + currentPublicUrl + '" alt="' + currentFile.name + '" />';
+                        updateHistoryDisplay();
+                        showToast('Upload concluido! Link pronto!', 'success');
+                    }
+                }, 1000);
 
             } catch (error) {
                 el.uploadProgress.classList.remove('active');
@@ -401,10 +436,16 @@
             el.progressBar.style.width = '0%';
         }
 
+        function copyRaw() {
+            el.rawLink.select();
+            document.execCommand('copy');
+            showToast('Link direto copiado!', 'success');
+        }
+
         function copyLink() {
             el.publicLink.select();
             document.execCommand('copy');
-            showToast('Link copiado!', 'success');
+            showToast('Link GitHub Pages copiado!', 'success');
         }
 
         function copyHtml() {
@@ -414,7 +455,7 @@
         }
 
         function share(platform) {
-            var url = encodeURIComponent(currentPublicUrl);
+            var url = encodeURIComponent(currentRawUrl);
             var urls = {
                 twitter: 'https://twitter.com/intent/tweet?url=' + url,
                 facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + url,
@@ -434,7 +475,7 @@
                 return;
             }
             el.historyGrid.innerHTML = uploadHistory.map(function(item) {
-                return '<div class="history-item" data-url="' + item.url + '">' +
+                return '<div class="history-item" data-raw="' + item.rawUrl + '">' +
                     '<img src="' + item.data + '" class="history-item-image" alt="' + item.name + '">' +
                     '<div class="history-item-info"><strong>' + item.name + '</strong><br>' + 
                     formatFileSize(item.size) + ' &bull; ' + new Date(item.date).toLocaleDateString('pt-BR') + '</div></div>';
