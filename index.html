@@ -28,7 +28,6 @@
         .hero h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; background: linear-gradient(135deg, var(--primary-light), #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .hero p { color: var(--text-muted); font-size: 1rem; max-width: 500px; margin: 0 auto; }
 
-        /* Modal Config */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; backdrop-filter: blur(5px); }
         .modal-overlay.active { display: flex; align-items: center; justify-content: center; }
         .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
@@ -68,7 +67,6 @@
         .share-btn { width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; }
         .share-btn:hover { background: var(--primary); color: white; }
 
-        /* History com botao de lixeira */
         .history-section { margin-top: 2rem; }
         .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
         .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
@@ -80,7 +78,6 @@
         .history-item-actions { display: flex; gap: 0.5rem; padding: 0 0.75rem 0.75rem; }
         .history-item-btn { flex: 1; padding: 0.4rem; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; font-size: 0.7rem; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.25rem; }
         .history-item-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
-        .history-item-btn.delete:hover { background: var(--error); color: white; border-color: var(--error); }
         .delete-btn { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; border: none; background: rgba(239, 68, 68, 0.9); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; opacity: 0; transition: all 0.3s; z-index: 10; }
         .history-item:hover .delete-btn { opacity: 1; }
         .delete-btn:hover { background: var(--error); transform: scale(1.1); }
@@ -197,7 +194,6 @@
         </div>
     </div>
 
-    <!-- Modal Configuracao -->
     <div class="modal-overlay" id="configModal">
         <div class="modal">
             <div class="modal-header">
@@ -226,348 +222,499 @@
     </div>
 
     <script>
-        var GITHUB_TOKEN = localStorage.getItem('githubToken') || '';
-        var GITHUB_OWNER = 'christianmoura1';
-        var GITHUB_REPO = 'Imagem-URL';
-        var currentFile = null;
-        var currentImageData = null;
-        var currentRawUrl = '';
-        var currentPublicUrl = '';
-        var uploadHistory = JSON.parse(localStorage.getItem('imageHostHistory') || '[]');
+        (function() {
+            'use strict';
 
-        var el = {
-            token: document.getElementById('githubToken'),
-            saveConfigBtn: document.getElementById('saveConfigBtn'),
-            deleteAllBtn: document.getElementById('deleteAllBtn'),
-            configBtn: document.getElementById('configBtn'),
-            configModal: document.getElementById('configModal'),
-            closeModal: document.getElementById('closeModal'),
-            uploadZone: document.getElementById('uploadZone'),
-            chooseFileBtn: document.getElementById('chooseFileBtn'),
-            fileInput: document.getElementById('fileInput'),
-            previewSection: document.getElementById('previewSection'),
-            previewImage: document.getElementById('previewImage'),
-            fileName: document.getElementById('fileName'),
-            fileSize: document.getElementById('fileSize'),
-            fileDimensions: document.getElementById('fileDimensions'),
-            uploadBtn: document.getElementById('uploadBtn'),
-            cancelBtn: document.getElementById('cancelBtn'),
-            uploadProgress: document.getElementById('uploadProgress'),
-            progressBar: document.getElementById('progressBar'),
-            progressText: document.getElementById('progressText'),
-            progressPercent: document.getElementById('progressPercent'),
-            resultSection: document.getElementById('resultSection'),
-            rawLink: document.getElementById('rawLink'),
-            publicLink: document.getElementById('publicLink'),
-            htmlLink: document.getElementById('htmlLink'),
-            copyRawBtn: document.getElementById('copyRawBtn'),
-            copyLinkBtn: document.getElementById('copyLinkBtn'),
-            copyHtmlBtn: document.getElementById('copyHtmlBtn'),
-            twitterBtn: document.getElementById('twitterBtn'),
-            facebookBtn: document.getElementById('facebookBtn'),
-            whatsappBtn: document.getElementById('whatsappBtn'),
-            emailBtn: document.getElementById('emailBtn'),
-            openRawBtn: document.getElementById('openRawBtn'),
-            newUploadBtn: document.getElementById('newUploadBtn'),
-            clearHistoryBtn: document.getElementById('clearHistoryBtn'),
-            historyGrid: document.getElementById('historyGrid'),
-            toast: document.getElementById('toast'),
-            toastIcon: document.getElementById('toastIcon'),
-            toastMessage: document.getElementById('toastMessage')
-        };
+            var GITHUB_TOKEN = localStorage.getItem('githubToken') || '';
+            var GITHUB_OWNER = 'christianmoura1';
+            var GITHUB_REPO = 'Imagem-URL';
+            var currentFile = null;
+            var currentImageData = null;
+            var currentRawUrl = '';
+            var currentPublicUrl = '';
+            var uploadHistory = JSON.parse(localStorage.getItem('imageHostHistory') || '[]');
 
-        el.token.value = GITHUB_TOKEN;
-        updateHistoryDisplay();
-        setupDragAndDrop();
-        bindEvents();
+            // Selecionar elementos
+            var el = {};
 
-        function bindEvents() {
-            el.configBtn.addEventListener('click', function() { el.configModal.classList.add('active'); });
-            el.closeModal.addEventListener('click', function() { el.configModal.classList.remove('active'); });
-            el.configModal.addEventListener('click', function(e) { if (e.target === el.configModal) el.configModal.classList.remove('active'); });
-            el.saveConfigBtn.addEventListener('click', function() { saveConfig(); el.configModal.classList.remove('active'); });
-            el.deleteAllBtn.addEventListener('click', deleteAllImages);
-            el.chooseFileBtn.addEventListener('click', function(e) { e.stopPropagation(); el.fileInput.click(); });
-            el.fileInput.addEventListener('change', handleFileSelect);
-            el.uploadZone.addEventListener('click', function() { el.fileInput.click(); });
-            el.uploadBtn.addEventListener('click', startUpload);
-            el.cancelBtn.addEventListener('click', clearSelection);
-            el.copyRawBtn.addEventListener('click', copyRaw);
-            el.copyLinkBtn.addEventListener('click', copyLink);
-            el.copyHtmlBtn.addEventListener('click', copyHtml);
-            el.twitterBtn.addEventListener('click', function() { share('twitter'); });
-            el.facebookBtn.addEventListener('click', function() { share('facebook'); });
-            el.whatsappBtn.addEventListener('click', function() { share('whatsapp'); });
-            el.emailBtn.addEventListener('click', function() { share('email'); });
-            el.openRawBtn.addEventListener('click', function() { window.open(currentRawUrl, '_blank'); });
-            el.newUploadBtn.addEventListener('click', clearSelection);
-            el.clearHistoryBtn.addEventListener('click', clearHistory);
-        }
-
-        function saveConfig() {
-            GITHUB_TOKEN = el.token.value.trim();
-            localStorage.setItem('githubToken', GITHUB_TOKEN);
-            showToast('Configuracao salva!', 'success');
-        }
-
-        function setupDragAndDrop() {
-            var zone = el.uploadZone;
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function(e) {
-                zone.addEventListener(e, function(ev) { ev.preventDefault(); ev.stopPropagation(); }, false);
-            });
-            ['dragenter', 'dragover'].forEach(function(e) {
-                zone.addEventListener(e, function() { zone.classList.add('dragover'); }, false);
-            });
-            ['dragleave', 'drop'].forEach(function(e) {
-                zone.addEventListener(e, function() { zone.classList.remove('dragover'); }, false);
-            });
-            zone.addEventListener('drop', function(e) {
-                if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-            }, false);
-        }
-
-        function handleFileSelect(event) {
-            if (event.target.files[0]) handleFile(event.target.files[0]);
-        }
-
-        function handleFile(file) {
-            if (!file.type.startsWith('image/')) {
-                showToast('Selecione apenas imagens.', 'error');
-                return;
-            }
-            if (file.size > 5 * 1024 * 1024) {
-                showToast('Maximo 5MB.', 'error');
-                return;
-            }
-            currentFile = file;
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                currentImageData = e.target.result;
-                var img = new Image();
-                img.onload = function() {
-                    el.previewImage.src = currentImageData;
-                    el.fileName.textContent = file.name;
-                    el.fileSize.textContent = formatFileSize(file.size);
-                    el.fileDimensions.textContent = img.width + ' x ' + img.height;
-                    el.previewSection.classList.add('active');
-                    el.uploadZone.style.display = 'none';
-                };
-                img.src = currentImageData;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        async function startUpload() {
-            if (!GITHUB_TOKEN) {
-                showToast('Configure o token em Configuracoes!', 'error');
-                el.configModal.classList.add('active');
-                return;
+            function getElements() {
+                el.token = document.getElementById('githubToken');
+                el.saveConfigBtn = document.getElementById('saveConfigBtn');
+                el.deleteAllBtn = document.getElementById('deleteAllBtn');
+                el.configBtn = document.getElementById('configBtn');
+                el.configModal = document.getElementById('configModal');
+                el.closeModal = document.getElementById('closeModal');
+                el.uploadZone = document.getElementById('uploadZone');
+                el.chooseFileBtn = document.getElementById('chooseFileBtn');
+                el.fileInput = document.getElementById('fileInput');
+                el.previewSection = document.getElementById('previewSection');
+                el.previewImage = document.getElementById('previewImage');
+                el.fileName = document.getElementById('fileName');
+                el.fileSize = document.getElementById('fileSize');
+                el.fileDimensions = document.getElementById('fileDimensions');
+                el.uploadBtn = document.getElementById('uploadBtn');
+                el.cancelBtn = document.getElementById('cancelBtn');
+                el.uploadProgress = document.getElementById('uploadProgress');
+                el.progressBar = document.getElementById('progressBar');
+                el.progressText = document.getElementById('progressText');
+                el.progressPercent = document.getElementById('progressPercent');
+                el.resultSection = document.getElementById('resultSection');
+                el.rawLink = document.getElementById('rawLink');
+                el.publicLink = document.getElementById('publicLink');
+                el.htmlLink = document.getElementById('htmlLink');
+                el.copyRawBtn = document.getElementById('copyRawBtn');
+                el.copyLinkBtn = document.getElementById('copyLinkBtn');
+                el.copyHtmlBtn = document.getElementById('copyHtmlBtn');
+                el.twitterBtn = document.getElementById('twitterBtn');
+                el.facebookBtn = document.getElementById('facebookBtn');
+                el.whatsappBtn = document.getElementById('whatsappBtn');
+                el.emailBtn = document.getElementById('emailBtn');
+                el.openRawBtn = document.getElementById('openRawBtn');
+                el.newUploadBtn = document.getElementById('newUploadBtn');
+                el.clearHistoryBtn = document.getElementById('clearHistoryBtn');
+                el.historyGrid = document.getElementById('historyGrid');
+                el.toast = document.getElementById('toast');
+                el.toastIcon = document.getElementById('toastIcon');
+                el.toastMessage = document.getElementById('toastMessage');
             }
 
-            el.previewSection.classList.remove('active');
-            el.uploadProgress.classList.add('active');
-            el.uploadBtn.disabled = true;
+            function init() {
+                try {
+                    getElements();
 
-            try {
-                updateProgress(2, 'Verificando limites...');
-                var rateRes = await fetch('https://api.github.com/rate_limit', {
-                    headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }
-                });
-                if (rateRes.ok) {
-                    var rateData = await rateRes.json();
-                    var remaining = rateData.resources.core.remaining;
-                    if (remaining < 5) {
-                        var resetTime = new Date(rateData.resources.core.reset * 1000);
-                        var minutes = Math.ceil((resetTime - Date.now()) / 60000);
-                        throw new Error('Limite de requisicoes atingido. Aguarde ' + minutes + ' minutos.');
-                    }
+                    if (el.token) el.token.value = GITHUB_TOKEN;
+
+                    updateHistoryDisplay();
+                    setupDragAndDrop();
+                    bindEvents();
+
+                    console.log('ImageHost iniciado com sucesso');
+                } catch (e) {
+                    console.error('Erro ao iniciar:', e);
+                    alert('Erro ao carregar o site. Verifique o console.');
+                }
+            }
+
+            function bindEvents() {
+                // Config modal
+                if (el.configBtn) {
+                    el.configBtn.addEventListener('click', function() { 
+                        if (el.configModal) el.configModal.classList.add('active'); 
+                    });
                 }
 
-                updateProgress(4, 'Verificando espaco...');
+                if (el.closeModal) {
+                    el.closeModal.addEventListener('click', function() { 
+                        if (el.configModal) el.configModal.classList.remove('active'); 
+                    });
+                }
+
+                if (el.configModal) {
+                    el.configModal.addEventListener('click', function(e) { 
+                        if (e.target === el.configModal) el.configModal.classList.remove('active'); 
+                    });
+                }
+
+                if (el.saveConfigBtn) {
+                    el.saveConfigBtn.addEventListener('click', function() { 
+                        saveConfig(); 
+                        if (el.configModal) el.configModal.classList.remove('active'); 
+                    });
+                }
+
+                if (el.deleteAllBtn) {
+                    el.deleteAllBtn.addEventListener('click', deleteAllImages);
+                }
+
+                // Upload
+                if (el.chooseFileBtn) {
+                    el.chooseFileBtn.addEventListener('click', function(e) { 
+                        e.stopPropagation(); 
+                        if (el.fileInput) el.fileInput.click(); 
+                    });
+                }
+
+                if (el.fileInput) {
+                    el.fileInput.addEventListener('change', handleFileSelect);
+                }
+
+                if (el.uploadZone) {
+                    el.uploadZone.addEventListener('click', function() { 
+                        if (el.fileInput) el.fileInput.click(); 
+                    });
+                }
+
+                if (el.uploadBtn) {
+                    el.uploadBtn.addEventListener('click', startUpload);
+                }
+
+                if (el.cancelBtn) {
+                    el.cancelBtn.addEventListener('click', clearSelection);
+                }
+
+                // Result
+                if (el.copyRawBtn) el.copyRawBtn.addEventListener('click', copyRaw);
+                if (el.copyLinkBtn) el.copyLinkBtn.addEventListener('click', copyLink);
+                if (el.copyHtmlBtn) el.copyHtmlBtn.addEventListener('click', copyHtml);
+                if (el.twitterBtn) el.twitterBtn.addEventListener('click', function() { share('twitter'); });
+                if (el.facebookBtn) el.facebookBtn.addEventListener('click', function() { share('facebook'); });
+                if (el.whatsappBtn) el.whatsappBtn.addEventListener('click', function() { share('whatsapp'); });
+                if (el.emailBtn) el.emailBtn.addEventListener('click', function() { share('email'); });
+                if (el.openRawBtn) el.openRawBtn.addEventListener('click', function() { window.open(currentRawUrl, '_blank'); });
+                if (el.newUploadBtn) el.newUploadBtn.addEventListener('click', clearSelection);
+                if (el.clearHistoryBtn) el.clearHistoryBtn.addEventListener('click', clearHistory);
+
+                // Event delegation para historico
+                if (el.historyGrid) {
+                    el.historyGrid.addEventListener('click', function(e) {
+                        var deleteBtn = e.target.closest('.delete-btn');
+                        var actionBtn = e.target.closest('.history-item-btn');
+                        var img = e.target.closest('.history-item-image');
+
+                        if (deleteBtn) {
+                            var id = deleteBtn.getAttribute('data-id');
+                            if (id) deleteImage(id);
+                            return;
+                        }
+
+                        if (actionBtn) {
+                            var action = actionBtn.getAttribute('data-action');
+                            var url = actionBtn.getAttribute('data-url');
+                            if (action === 'copy' && url) {
+                                navigator.clipboard.writeText(url).then(function() {
+                                    showToast('Link copiado!', 'success');
+                                }).catch(function() {
+                                    showToast('Erro ao copiar', 'error');
+                                });
+                            } else if (action === 'open' && url) {
+                                window.open(url, '_blank');
+                            }
+                            return;
+                        }
+
+                        if (img) {
+                            var imgUrl = img.getAttribute('data-url');
+                            if (imgUrl) window.open(imgUrl, '_blank');
+                        }
+                    });
+                }
+            }
+
+            function saveConfig() {
+                if (el.token) {
+                    GITHUB_TOKEN = el.token.value.trim();
+                    localStorage.setItem('githubToken', GITHUB_TOKEN);
+                    showToast('Configuracao salva!', 'success');
+                }
+            }
+
+            function setupDragAndDrop() {
+                if (!el.uploadZone) return;
+                var zone = el.uploadZone;
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function(e) {
+                    zone.addEventListener(e, function(ev) { ev.preventDefault(); ev.stopPropagation(); }, false);
+                });
+                ['dragenter', 'dragover'].forEach(function(e) {
+                    zone.addEventListener(e, function() { zone.classList.add('dragover'); }, false);
+                });
+                ['dragleave', 'drop'].forEach(function(e) {
+                    zone.addEventListener(e, function() { zone.classList.remove('dragover'); }, false);
+                });
+                zone.addEventListener('drop', function(e) {
+                    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+                }, false);
+            }
+
+            function handleFileSelect(event) {
+                if (event.target.files[0]) handleFile(event.target.files[0]);
+            }
+
+            function handleFile(file) {
+                if (!file.type.startsWith('image/')) {
+                    showToast('Selecione apenas imagens.', 'error');
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('Maximo 5MB.', 'error');
+                    return;
+                }
+                currentFile = file;
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImageData = e.target.result;
+                    var img = new Image();
+                    img.onload = function() {
+                        if (el.previewImage) el.previewImage.src = currentImageData;
+                        if (el.fileName) el.fileName.textContent = file.name;
+                        if (el.fileSize) el.fileSize.textContent = formatFileSize(file.size);
+                        if (el.fileDimensions) el.fileDimensions.textContent = img.width + ' x ' + img.height;
+                        if (el.previewSection) el.previewSection.classList.add('active');
+                        if (el.uploadZone) el.uploadZone.style.display = 'none';
+                    };
+                    img.src = currentImageData;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            async function startUpload() {
+                if (!GITHUB_TOKEN) {
+                    showToast('Configure o token em Configuracoes!', 'error');
+                    if (el.configModal) el.configModal.classList.add('active');
+                    return;
+                }
+
+                if (el.previewSection) el.previewSection.classList.remove('active');
+                if (el.uploadProgress) el.uploadProgress.classList.add('active');
+                if (el.uploadBtn) el.uploadBtn.disabled = true;
+
                 try {
-                    var repoRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO, {
+                    updateProgress(2, 'Verificando limites...');
+                    var rateRes = await fetch('https://api.github.com/rate_limit', {
                         headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }
                     });
-                    if (repoRes.ok) {
-                        var repoData = await repoRes.json();
-                        var sizeMB = repoData.size / 1024;
-                        if (sizeMB > 900) {
-                            updateProgress(6, 'Limpando imagens antigas...');
-                            await cleanupOldImages();
+                    if (rateRes.ok) {
+                        var rateData = await rateRes.json();
+                        var remaining = rateData.resources.core.remaining;
+                        if (remaining < 5) {
+                            var resetTime = new Date(rateData.resources.core.reset * 1000);
+                            var minutes = Math.ceil((resetTime - Date.now()) / 60000);
+                            throw new Error('Limite de requisicoes atingido. Aguarde ' + minutes + ' minutos.');
                         }
                     }
-                } catch(e) { console.log('Erro ao verificar tamanho:', e); }
 
-                var timestamp = Date.now();
-                var randomId = Math.random().toString(36).substring(2, 6);
-                var ext = currentFile.name.split('.').pop().toLowerCase();
-                var fileName = timestamp + '_' + randomId + '.' + ext;
-                var path = 'imagem/' + fileName;
-
-                updateProgress(10, 'Enviando...');
-                var base64Data = currentImageData.split(',')[1];
-
-                var uploadRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
-                    method: 'PUT',
-                    headers: {
-                        'Accept': 'application/vnd.github+json',
-                        'Authorization': 'Bearer ' + GITHUB_TOKEN,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: 'Add image: ' + currentFile.name,
-                        content: base64Data
-                    })
-                });
-
-                if (!uploadRes.ok) {
-                    var error = await uploadRes.json();
-                    if (uploadRes.status === 422 && error.message && error.message.indexOf('sha') > -1) {
-                        updateProgress(12, 'Arquivo existe, atualizando...');
-                        var checkRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
-                            headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + GITHUB_TOKEN }
+                    updateProgress(4, 'Verificando espaco...');
+                    try {
+                        var repoRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO, {
+                            headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }
                         });
-                        if (checkRes.ok) {
-                            var existing = await checkRes.json();
-                            uploadRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
-                                method: 'PUT',
-                                headers: {
-                                    'Accept': 'application/vnd.github+json',
-                                    'Authorization': 'Bearer ' + GITHUB_TOKEN,
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    message: 'Update image: ' + currentFile.name,
-                                    content: base64Data,
-                                    sha: existing.sha
-                                })
-                            });
-                            if (!uploadRes.ok) {
-                                error = await uploadRes.json();
-                                throw new Error(error.message || 'Erro ao atualizar');
+                        if (repoRes.ok) {
+                            var repoData = await repoRes.json();
+                            var sizeMB = repoData.size / 1024;
+                            if (sizeMB > 900) {
+                                updateProgress(6, 'Limpando imagens antigas...');
+                                await cleanupOldImages();
                             }
-                        } else {
-                            throw new Error(error.message || 'Erro no upload');
                         }
-                    } else if (error.message && error.message.indexOf('quota') > -1) {
-                        throw new Error('Limite de armazenamento atingido (1GB). Delete imagens antigas.');
-                    } else {
-                        throw new Error(error.message || 'Erro no upload');
-                    }
-                }
+                    } catch(e) { console.log('Erro ao verificar tamanho:', e); }
 
-                currentRawUrl = 'https://raw.githubusercontent.com/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/main/' + path;
-                currentPublicUrl = 'https://' + GITHUB_OWNER + '.github.io/Imagem-URL/imagem/' + fileName;
+                    var timestamp = Date.now();
+                    var randomId = Math.random().toString(36).substring(2, 6);
+                    var ext = currentFile.name.split('.').pop().toLowerCase();
+                    var fileName = timestamp + '_' + randomId + '.' + ext;
+                    var path = 'imagem/' + fileName;
 
-                var historyItem = {
-                    id: randomId, name: currentFile.name, size: currentFile.size,
-                    rawUrl: currentRawUrl, publicUrl: currentPublicUrl, 
-                    data: currentImageData, date: new Date().toISOString()
-                };
-                uploadHistory.unshift(historyItem);
-                if (uploadHistory.length > 20) uploadHistory.pop();
-                localStorage.setItem('imageHostHistory', JSON.stringify(uploadHistory));
+                    updateProgress(10, 'Enviando...');
+                    var base64Data = currentImageData.split(',')[1];
 
-                var startPercent = 10;
-                var endPercent = 100;
-                var duration = 20000;
-                var startTime = Date.now();
-
-                var progressInterval = setInterval(function() {
-                    var elapsed = Date.now() - startTime;
-                    var progress = startPercent + ((elapsed / duration) * (endPercent - startPercent));
-                    var secondsLeft = Math.ceil((duration - elapsed) / 1000);
-
-                    if (progress >= 100) {
-                        progress = 100;
-                        clearInterval(progressInterval);
-                        updateProgress(100, 'Concluido!');
-
-                        setTimeout(function() {
-                            el.uploadProgress.classList.remove('active');
-                            el.resultSection.classList.add('active');
-                            el.rawLink.value = currentRawUrl;
-                            el.publicLink.value = currentPublicUrl;
-                            el.htmlLink.value = '<img src="' + currentPublicUrl + '" alt="' + currentFile.name + '" />';
-                            updateHistoryDisplay();
-                            showToast('Upload concluido! Link pronto!', 'success');
-                        }, 500);
-                    } else {
-                        updateProgress(progress, 'Propagando... ' + secondsLeft + 's');
-                    }
-                }, 100);
-
-            } catch (error) {
-                el.uploadProgress.classList.remove('active');
-                el.previewSection.classList.add('active');
-                showToast('Erro: ' + error.message, 'error');
-                console.error(error);
-            } finally {
-                el.uploadBtn.disabled = false;
-            }
-        }
-
-        async function deleteImage(id, rawUrl, publicUrl) {
-            if (!confirm('Excluir esta imagem do GitHub?')) return;
-
-            try {
-                var fileName = rawUrl.split('/').pop();
-                var path = 'imagem/' + fileName;
-
-                var checkRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
-                    headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }
-                });
-
-                if (checkRes.ok) {
-                    var file = await checkRes.json();
-                    var deleteRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
-                        method: 'DELETE',
+                    var uploadRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
+                        method: 'PUT',
                         headers: {
+                            'Accept': 'application/vnd.github+json',
                             'Authorization': 'Bearer ' + GITHUB_TOKEN,
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            message: 'Delete image: ' + fileName,
-                            sha: file.sha
+                            message: 'Add image: ' + currentFile.name,
+                            content: base64Data
                         })
                     });
 
-                    if (deleteRes.ok) {
-                        uploadHistory = uploadHistory.filter(function(h) { return h.id !== id; });
-                        localStorage.setItem('imageHostHistory', JSON.stringify(uploadHistory));
-                        updateHistoryDisplay();
-                        showToast('Imagem excluida!', 'success');
-                    } else {
-                        throw new Error('Erro ao excluir');
+                    if (!uploadRes.ok) {
+                        var error = await uploadRes.json();
+                        if (uploadRes.status === 422 && error.message && error.message.indexOf('sha') > -1) {
+                            updateProgress(12, 'Arquivo existe, atualizando...');
+                            var checkRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
+                                headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + GITHUB_TOKEN }
+                            });
+                            if (checkRes.ok) {
+                                var existing = await checkRes.json();
+                                uploadRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
+                                    method: 'PUT',
+                                    headers: {
+                                        'Accept': 'application/vnd.github+json',
+                                        'Authorization': 'Bearer ' + GITHUB_TOKEN,
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        message: 'Update image: ' + currentFile.name,
+                                        content: base64Data,
+                                        sha: existing.sha
+                                    })
+                                });
+                                if (!uploadRes.ok) {
+                                    error = await uploadRes.json();
+                                    throw new Error(error.message || 'Erro ao atualizar');
+                                }
+                            } else {
+                                throw new Error(error.message || 'Erro no upload');
+                            }
+                        } else if (error.message && error.message.indexOf('quota') > -1) {
+                            throw new Error('Limite de armazenamento atingido (1GB). Delete imagens antigas.');
+                        } else {
+                            throw new Error(error.message || 'Erro no upload');
+                        }
+                    }
+
+                    currentRawUrl = 'https://raw.githubusercontent.com/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/main/' + path;
+                    currentPublicUrl = 'https://' + GITHUB_OWNER + '.github.io/Imagem-URL/imagem/' + fileName;
+
+                    var historyItem = {
+                        id: randomId, name: currentFile.name, size: currentFile.size,
+                        rawUrl: currentRawUrl, publicUrl: currentPublicUrl, 
+                        data: currentImageData, date: new Date().toISOString()
+                    };
+                    uploadHistory.unshift(historyItem);
+                    if (uploadHistory.length > 20) uploadHistory.pop();
+                    localStorage.setItem('imageHostHistory', JSON.stringify(uploadHistory));
+
+                    var startPercent = 10;
+                    var endPercent = 100;
+                    var duration = 20000;
+                    var startTime = Date.now();
+
+                    var progressInterval = setInterval(function() {
+                        var elapsed = Date.now() - startTime;
+                        var progress = startPercent + ((elapsed / duration) * (endPercent - startPercent));
+                        var secondsLeft = Math.ceil((duration - elapsed) / 1000);
+
+                        if (progress >= 100) {
+                            progress = 100;
+                            clearInterval(progressInterval);
+                            updateProgress(100, 'Concluido!');
+
+                            setTimeout(function() {
+                                if (el.uploadProgress) el.uploadProgress.classList.remove('active');
+                                if (el.resultSection) el.resultSection.classList.add('active');
+                                if (el.rawLink) el.rawLink.value = currentRawUrl;
+                                if (el.publicLink) el.publicLink.value = currentPublicUrl;
+                                if (el.htmlLink) el.htmlLink.value = '<img src="' + currentPublicUrl + '" alt="' + currentFile.name + '" />';
+                                updateHistoryDisplay();
+                                showToast('Upload concluido! Link pronto!', 'success');
+                            }, 500);
+                        } else {
+                            updateProgress(progress, 'Propagando... ' + secondsLeft + 's');
+                        }
+                    }, 100);
+
+                } catch (error) {
+                    if (el.uploadProgress) el.uploadProgress.classList.remove('active');
+                    if (el.previewSection) el.previewSection.classList.add('active');
+                    showToast('Erro: ' + error.message, 'error');
+                    console.error(error);
+                } finally {
+                    if (el.uploadBtn) el.uploadBtn.disabled = false;
+                }
+            }
+
+            async function deleteImage(id) {
+                if (!confirm('Excluir esta imagem do GitHub?')) return;
+
+                var item = uploadHistory.find(function(h) { return h.id === id; });
+                if (!item) return;
+
+                try {
+                    var fileName = item.rawUrl.split('/').pop();
+                    var path = 'imagem/' + fileName;
+
+                    var checkRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
+                        headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }
+                    });
+
+                    if (checkRes.ok) {
+                        var file = await checkRes.json();
+                        var deleteRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': 'Bearer ' + GITHUB_TOKEN,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                message: 'Delete image: ' + fileName,
+                                sha: file.sha
+                            })
+                        });
+
+                        if (deleteRes.ok) {
+                            uploadHistory = uploadHistory.filter(function(h) { return h.id !== id; });
+                            localStorage.setItem('imageHostHistory', JSON.stringify(uploadHistory));
+                            updateHistoryDisplay();
+                            showToast('Imagem excluida!', 'success');
+                        } else {
+                            throw new Error('Erro ao excluir');
+                        }
+                    }
+                } catch (error) {
+                    showToast('Erro ao excluir: ' + error.message, 'error');
+                }
+            }
+
+            async function deleteAllImages() {
+                if (!GITHUB_TOKEN) {
+                    showToast('Configure o token primeiro!', 'error');
+                    return;
+                }
+                if (!confirm('ATENCAO: Isso vai excluir TODAS as imagens do repositorio. Continuar?')) return;
+
+                if (el.deleteAllBtn) {
+                    el.deleteAllBtn.disabled = true;
+                    el.deleteAllBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Excluindo...';
+                }
+
+                try {
+                    var deleted = 0;
+                    var contentsRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/imagem', {
+                        headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }
+                    });
+
+                    if (contentsRes.ok) {
+                        var files = await contentsRes.json();
+                        for (var i = 0; i < files.length; i++) {
+                            var file = files[i];
+                            if (file.type === 'file') {
+                                try {
+                                    await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + file.path, {
+                                        method: 'DELETE',
+                                        headers: {
+                                            'Authorization': 'Bearer ' + GITHUB_TOKEN,
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({
+                                            message: 'Delete image: ' + file.name,
+                                            sha: file.sha
+                                        })
+                                    });
+                                    deleted++;
+                                } catch(e) {}
+                            }
+                        }
+                    }
+
+                    uploadHistory = [];
+                    localStorage.removeItem('imageHostHistory');
+                    updateHistoryDisplay();
+                    showToast('Excluidas ' + deleted + ' imagens!', 'success');
+                } catch (error) {
+                    showToast('Erro ao excluir: ' + error.message, 'error');
+                } finally {
+                    if (el.deleteAllBtn) {
+                        el.deleteAllBtn.disabled = false;
+                        el.deleteAllBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Excluir Todas as Imagens';
                     }
                 }
-            } catch (error) {
-                showToast('Erro ao excluir: ' + error.message, 'error');
             }
-        }
 
-        async function deleteAllImages() {
-            if (!GITHUB_TOKEN) {
-                showToast('Configure o token primeiro!', 'error');
-                return;
-            }
-            if (!confirm('ATENCAO: Isso vai excluir TODAS as imagens do repositorio. Continuar?')) return;
-
-            el.deleteAllBtn.disabled = true;
-            el.deleteAllBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Excluindo...';
-
-            try {
-                var deleted = 0;
-                var contentsRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/imagem', {
-                    headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }
-                });
-
-                if (contentsRes.ok) {
-                    var files = await contentsRes.json();
-                    for (var i = 0; i < files.length; i++) {
-                        var file = files[i];
-                        if (file.type === 'file') {
-                            try {
+            async function cleanupOldImages() {
+                try {
+                    var contentsRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/imagem', {
+                        headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }
+                    });
+                    if (contentsRes.ok) {
+                        var files = await contentsRes.json();
+                        files.sort(function(a, b) { return new Date(a.sha) - new Date(b.sha); });
+                        var toDelete = files.slice(0, 5);
+                        for (var i = 0; i < toDelete.length; i++) {
+                            var file = toDelete[i];
+                            if (file.type === 'file') {
                                 await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + file.path, {
                                     method: 'DELETE',
                                     headers: {
@@ -575,151 +722,128 @@
                                         'Content-Type': 'application/json'
                                     },
                                     body: JSON.stringify({
-                                        message: 'Delete image: ' + file.name,
+                                        message: 'Delete old image: ' + file.name,
                                         sha: file.sha
                                     })
                                 });
-                                deleted++;
-                            } catch(e) {}
+                            }
                         }
                     }
-                }
+                } catch(e) { console.log('Erro na limpeza:', e); }
+            }
 
+            function updateProgress(percent, text) {
+                if (el.progressBar) el.progressBar.style.width = percent + '%';
+                if (el.progressPercent) el.progressPercent.textContent = Math.floor(percent) + '%';
+                if (el.progressText) el.progressText.textContent = text;
+            }
+
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 B';
+                var k = 1024;
+                var sizes = ['B', 'KB', 'MB', 'GB'];
+                var i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+            }
+
+            function clearSelection() {
+                currentFile = null;
+                currentImageData = null;
+                if (el.fileInput) el.fileInput.value = '';
+                if (el.previewSection) el.previewSection.classList.remove('active');
+                if (el.uploadProgress) el.uploadProgress.classList.remove('active');
+                if (el.resultSection) el.resultSection.classList.remove('active');
+                if (el.uploadZone) el.uploadZone.style.display = 'block';
+                if (el.progressBar) el.progressBar.style.width = '0%';
+            }
+
+            function copyRaw() {
+                if (el.rawLink) {
+                    el.rawLink.select();
+                    document.execCommand('copy');
+                    showToast('Link copiado!', 'success');
+                }
+            }
+
+            function copyLink() {
+                if (el.publicLink) {
+                    el.publicLink.select();
+                    document.execCommand('copy');
+                    showToast('Link copiado!', 'success');
+                }
+            }
+
+            function copyHtml() {
+                if (el.htmlLink) {
+                    el.htmlLink.select();
+                    document.execCommand('copy');
+                    showToast('HTML copiado!', 'success');
+                }
+            }
+
+            function share(platform) {
+                var url = encodeURIComponent(currentRawUrl);
+                var urls = {
+                    twitter: 'https://twitter.com/intent/tweet?url=' + url,
+                    facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + url,
+                    whatsapp: 'https://wa.me/?text=' + url,
+                    email: 'mailto:?subject=Imagem&body=' + url
+                };
+                if (platform === 'email') {
+                    window.location.href = urls[platform];
+                } else {
+                    window.open(urls[platform], '_blank');
+                }
+            }
+
+            function clearHistory() {
+                if (uploadHistory.length === 0) return;
+                if (!confirm('Limpar historico local? (As imagens no GitHub nao serao excluidas)')) return;
                 uploadHistory = [];
                 localStorage.removeItem('imageHostHistory');
                 updateHistoryDisplay();
-                showToast('Excluidas ' + deleted + ' imagens!', 'success');
-            } catch (error) {
-                showToast('Erro ao excluir: ' + error.message, 'error');
-            } finally {
-                el.deleteAllBtn.disabled = false;
-                el.deleteAllBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Excluir Todas as Imagens';
+                showToast('Historico limpo', 'success');
             }
-        }
 
-        async function cleanupOldImages() {
-            try {
-                var contentsRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/imagem', {
-                    headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }
-                });
-                if (contentsRes.ok) {
-                    var files = await contentsRes.json();
-                    files.sort(function(a, b) { return new Date(a.sha) - new Date(b.sha); });
-                    var toDelete = files.slice(0, 5);
-                    for (var i = 0; i < toDelete.length; i++) {
-                        var file = toDelete[i];
-                        if (file.type === 'file') {
-                            await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + file.path, {
-                                method: 'DELETE',
-                                headers: {
-                                    'Authorization': 'Bearer ' + GITHUB_TOKEN,
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    message: 'Delete old image: ' + file.name,
-                                    sha: file.sha
-                                })
-                            });
-                        }
-                    }
+            function updateHistoryDisplay() {
+                if (!el.historyGrid) return;
+                if (uploadHistory.length === 0) {
+                    el.historyGrid.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">Nenhuma imagem ainda</p>';
+                    return;
                 }
-            } catch(e) { console.log('Erro na limpeza:', e); }
-        }
+                el.historyGrid.innerHTML = uploadHistory.map(function(item) {
+                    return '<div class="history-item" data-id="' + item.id + '">' +
+                        '<button class="delete-btn" data-id="' + item.id + '" title="Excluir"><i class="fas fa-trash"></i></button>' +
+                        '<img src="' + item.data + '" class="history-item-image" data-url="' + item.rawUrl + '" alt="' + item.name + '">' +
+                        '<div class="history-item-info"><strong>' + item.name + '</strong>' + 
+                        formatFileSize(item.size) + ' &bull; ' + new Date(item.date).toLocaleDateString('pt-BR') + '</div>' +
+                        '<div class="history-item-actions">' +
+                        '<button class="history-item-btn" data-action="copy" data-url="' + item.rawUrl + '"><i class="fas fa-copy"></i> Link</button>' +
+                        '<button class="history-item-btn" data-action="open" data-url="' + item.rawUrl + '"><i class="fas fa-external-link-alt"></i> Abrir</button>' +
+                        '</div></div>';
+                }).join('');
+            }
 
-        function updateProgress(percent, text) {
-            el.progressBar.style.width = percent + '%';
-            el.progressPercent.textContent = Math.floor(percent) + '%';
-            el.progressText.textContent = text;
-        }
+            function showToast(message, type) {
+                if (!el.toast) return;
+                el.toast.className = 'toast ' + (type || 'success');
+                if (el.toastIcon) {
+                    el.toastIcon.innerHTML = type === 'success' ? '<i class="fas fa-check"></i>' : '<i class="fas fa-exclamation-triangle"></i>';
+                    el.toastIcon.style.background = type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+                    el.toastIcon.style.color = type === 'success' ? 'var(--success)' : 'var(--error)';
+                }
+                if (el.toastMessage) el.toastMessage.textContent = message;
+                el.toast.classList.add('show');
+                setTimeout(function() { el.toast.classList.remove('show'); }, 3000);
+            }
 
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 B';
-            var k = 1024;
-            var sizes = ['B', 'KB', 'MB', 'GB'];
-            var i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-        }
-
-        function clearSelection() {
-            currentFile = null;
-            currentImageData = null;
-            el.fileInput.value = '';
-            el.previewSection.classList.remove('active');
-            el.uploadProgress.classList.remove('active');
-            el.resultSection.classList.remove('active');
-            el.uploadZone.style.display = 'block';
-            el.progressBar.style.width = '0%';
-        }
-
-        function copyRaw() {
-            el.rawLink.select();
-            document.execCommand('copy');
-            showToast('Link copiado!', 'success');
-        }
-
-        function copyLink() {
-            el.publicLink.select();
-            document.execCommand('copy');
-            showToast('Link copiado!', 'success');
-        }
-
-        function copyHtml() {
-            el.htmlLink.select();
-            document.execCommand('copy');
-            showToast('HTML copiado!', 'success');
-        }
-
-        function share(platform) {
-            var url = encodeURIComponent(currentRawUrl);
-            var urls = {
-                twitter: 'https://twitter.com/intent/tweet?url=' + url,
-                facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + url,
-                whatsapp: 'https://wa.me/?text=' + url,
-                email: 'mailto:?subject=Imagem&body=' + url
-            };
-            if (platform === 'email') {
-                window.location.href = urls[platform];
+            // Iniciar quando DOM estiver pronto
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
             } else {
-                window.open(urls[platform], '_blank');
+                init();
             }
-        }
-
-        function clearHistory() {
-            if (uploadHistory.length === 0) return;
-            if (!confirm('Limpar historico local? (As imagens no GitHub nao serao excluidas)')) return;
-            uploadHistory = [];
-            localStorage.removeItem('imageHostHistory');
-            updateHistoryDisplay();
-            showToast('Historico limpo', 'success');
-        }
-
-        function updateHistoryDisplay() {
-            if (uploadHistory.length === 0) {
-                el.historyGrid.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">Nenhuma imagem ainda</p>';
-                return;
-            }
-            el.historyGrid.innerHTML = uploadHistory.map(function(item) {
-                return '<div class="history-item" id="item-' + item.id + '">' +
-                    '<button class="delete-btn" onclick="deleteImage('' + item.id + '', '' + item.rawUrl + '', '' + item.publicUrl + '')" title="Excluir"><i class="fas fa-trash"></i></button>' +
-                    '<img src="' + item.data + '" class="history-item-image" onclick="window.open('' + item.rawUrl + '', '_blank')" alt="' + item.name + '">' +
-                    '<div class="history-item-info"><strong>' + item.name + '</strong>' + 
-                    formatFileSize(item.size) + ' &bull; ' + new Date(item.date).toLocaleDateString('pt-BR') + '</div>' +
-                    '<div class="history-item-actions">' +
-                    '<button class="history-item-btn" onclick="navigator.clipboard.writeText('' + item.rawUrl + '').then(function(){ showToast('Link copiado!', 'success'); })"><i class="fas fa-copy"></i> Link</button>' +
-                    '<button class="history-item-btn" onclick="window.open('' + item.rawUrl + '', '_blank')"><i class="fas fa-external-link-alt"></i> Abrir</button>' +
-                    '</div></div>';
-            }).join('');
-        }
-
-        function showToast(message, type) {
-            el.toast.className = 'toast ' + type;
-            el.toastIcon.innerHTML = type === 'success' ? '<i class="fas fa-check"></i>' : '<i class="fas fa-exclamation-triangle"></i>';
-            el.toastIcon.style.background = type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)';
-            el.toastIcon.style.color = type === 'success' ? 'var(--success)' : 'var(--error)';
-            el.toastMessage.textContent = message;
-            el.toast.classList.add('show');
-            setTimeout(function() { el.toast.classList.remove('show'); }, 3000);
-        }
+        })();
     </script>
 </body>
 </html>
