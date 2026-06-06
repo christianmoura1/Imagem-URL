@@ -20,20 +20,32 @@
         @keyframes float { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-20px, -20px); } }
         header { padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: rgba(15, 15, 26, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
         .logo { display: flex; align-items: center; gap: 0.75rem; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); }
+        .header-actions { display: flex; gap: 1rem; align-items: center; }
+        .icon-btn { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; font-size: 1rem; }
+        .icon-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
         .container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
         .hero { text-align: center; margin-bottom: 2rem; }
         .hero h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; background: linear-gradient(135deg, var(--primary-light), #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .hero p { color: var(--text-muted); font-size: 1rem; max-width: 500px; margin: 0 auto; }
-        .config-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; }
-        .config-section h3 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--primary-light); }
-        .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .config-input { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; color: var(--text); font-size: 0.9rem; width: 100%; outline: none; }
+
+        /* Modal Config */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; backdrop-filter: blur(5px); }
+        .modal-overlay.active { display: flex; align-items: center; justify-content: center; }
+        .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-header h3 { font-size: 1.25rem; color: var(--primary-light); }
+        .modal-close { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .modal-close:hover { background: var(--error); color: white; border-color: var(--error); }
+        .config-input { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; color: var(--text); font-size: 0.9rem; width: 100%; outline: none; margin-bottom: 1rem; }
         .config-input:focus { border-color: var(--primary); }
         .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; transition: all 0.3s; }
         .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); }
         .btn-secondary { background: var(--bg-hover); color: var(--text); border: 1px solid var(--border); }
+        .btn-danger { background: var(--error); color: white; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-block { width: 100%; justify-content: center; }
+
         .upload-zone { border: 2px dashed var(--border); border-radius: 16px; padding: 2.5rem; text-align: center; background: var(--bg-card); transition: all 0.3s; cursor: pointer; }
         .upload-zone:hover, .upload-zone.dragover { border-color: var(--primary); background: var(--bg-hover); transform: translateY(-2px); }
         .upload-icon { font-size: 3rem; color: var(--primary); margin-bottom: 1rem; display: inline-block; animation: bounce 2s infinite; }
@@ -55,18 +67,30 @@
         .share-buttons { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem; }
         .share-btn { width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; }
         .share-btn:hover { background: var(--primary); color: white; }
+
+        /* History com botao de lixeira */
         .history-section { margin-top: 2rem; }
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
         .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
-        .history-item { background: var(--bg-card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; }
+        .history-item { background: var(--bg-card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); position: relative; }
         .history-item:hover { border-color: var(--primary); }
-        .history-item-image { width: 100%; height: 120px; object-fit: cover; }
+        .history-item-image { width: 100%; height: 140px; object-fit: cover; cursor: pointer; }
         .history-item-info { padding: 0.75rem; font-size: 0.75rem; }
-        .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 1000; }
+        .history-item-info strong { font-size: 0.8rem; display: block; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .history-item-actions { display: flex; gap: 0.5rem; padding: 0 0.75rem 0.75rem; }
+        .history-item-btn { flex: 1; padding: 0.4rem; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; font-size: 0.7rem; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.25rem; }
+        .history-item-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .history-item-btn.delete:hover { background: var(--error); color: white; border-color: var(--error); }
+        .delete-btn { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; border: none; background: rgba(239, 68, 68, 0.9); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; opacity: 0; transition: all 0.3s; z-index: 10; }
+        .history-item:hover .delete-btn { opacity: 1; }
+        .delete-btn:hover { background: var(--error); transform: scale(1.1); }
+
+        .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 1001; }
         .toast.show { transform: translateY(0); opacity: 1; }
         .toast.success { border-color: var(--success); }
         .toast.error { border-color: var(--error); }
         .warning-box { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.8rem; color: var(--warning); }
-        @media (max-width: 768px) { .config-grid { grid-template-columns: 1fr; } .hero h1 { font-size: 1.8rem; } }
+        @media (max-width: 768px) { .hero h1 { font-size: 1.8rem; } .history-grid { grid-template-columns: repeat(2, 1fr); } }
     </style>
 <base target="_blank">
 </head>
@@ -74,25 +98,16 @@
     <div class="bg-animation"></div>
     <header>
         <div class="logo"><i class="fas fa-cloud-upload-alt"></i> ImageHost</div>
+        <div class="header-actions">
+            <button class="icon-btn" id="configBtn" title="Configuracoes">
+                <i class="fas fa-cog"></i>
+            </button>
+        </div>
     </header>
     <div class="container">
         <div class="hero">
             <h1>Hospede suas imagens</h1>
             <p>Upload real para GitHub. Links que funcionam!</p>
-        </div>
-
-        <div class="config-section">
-            <h3><i class="fas fa-cog"></i> Configuracao GitHub</h3>
-            <div class="config-grid">
-                <input type="text" class="config-input" id="githubToken" placeholder="GitHub Token (ghp_...)">
-                <input type="text" class="config-input" id="githubRepo" value="Imagem-URL" readonly>
-            </div>
-            <p style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.5rem;">
-                <i class="fas fa-info-circle"></i> Token em <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--primary-light);">github.com/settings/tokens</a> | Repo: Imagem-URL
-            </p>
-            <button class="btn btn-primary" style="margin-top: 0.75rem;" id="saveConfigBtn">
-                <i class="fas fa-save"></i> Salvar Configuracao
-            </button>
         </div>
 
         <div class="upload-zone" id="uploadZone">
@@ -113,10 +128,10 @@
                 <span><i class="fas fa-weight-hanging"></i> <span id="fileSize">-</span></span>
                 <span><i class="fas fa-expand"></i> <span id="fileDimensions">-</span></span>
             </div>
-            <button class="btn btn-primary" style="width: 100%; justify-content: center;" id="uploadBtn">
+            <button class="btn btn-primary btn-block" id="uploadBtn">
                 <i class="fas fa-upload"></i> Fazer Upload para GitHub
             </button>
-            <button class="btn btn-secondary" style="width: 100%; justify-content: center; margin-top: 0.5rem;" id="cancelBtn">
+            <button class="btn btn-secondary btn-block" style="margin-top: 0.5rem;" id="cancelBtn">
                 <i class="fas fa-times"></i> Cancelar
             </button>
         </div>
@@ -166,14 +181,40 @@
                 <button class="share-btn" id="emailBtn" title="Email"><i class="fas fa-envelope"></i></button>
                 <button class="share-btn" id="openRawBtn" title="Abrir Link"><i class="fas fa-external-link-alt"></i></button>
             </div>
-            <button class="btn btn-secondary" style="width: 100%; margin-top: 1rem; justify-content: center;" id="newUploadBtn">
+            <button class="btn btn-secondary btn-block" style="margin-top: 1rem;" id="newUploadBtn">
                 <i class="fas fa-plus"></i> Nova Imagem
             </button>
         </div>
 
         <div class="history-section">
-            <h2 style="font-size: 1.2rem; margin-bottom: 1rem;"><i class="fas fa-history"></i> Uploads Recentes</h2>
+            <div class="history-header">
+                <h2 style="font-size: 1.2rem;"><i class="fas fa-history"></i> Uploads Recentes</h2>
+                <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8rem;" id="clearHistoryBtn">
+                    <i class="fas fa-trash"></i> Limpar Historico
+                </button>
+            </div>
             <div class="history-grid" id="historyGrid"></div>
+        </div>
+    </div>
+
+    <!-- Modal Configuracao -->
+    <div class="modal-overlay" id="configModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-cog"></i> Configuracao GitHub</h3>
+                <button class="modal-close" id="closeModal"><i class="fas fa-times"></i></button>
+            </div>
+            <input type="text" class="config-input" id="githubToken" placeholder="GitHub Token (ghp_...)">
+            <input type="text" class="config-input" id="githubRepo" value="Imagem-URL" readonly>
+            <p style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 1rem;">
+                <i class="fas fa-info-circle"></i> Token em <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--primary-light);">github.com/settings/tokens</a>
+            </p>
+            <button class="btn btn-primary btn-block" id="saveConfigBtn">
+                <i class="fas fa-save"></i> Salvar Configuracao
+            </button>
+            <button class="btn btn-danger btn-block" style="margin-top: 0.75rem;" id="deleteAllBtn">
+                <i class="fas fa-trash-alt"></i> Excluir Todas as Imagens
+            </button>
         </div>
     </div>
 
@@ -197,6 +238,10 @@
         var el = {
             token: document.getElementById('githubToken'),
             saveConfigBtn: document.getElementById('saveConfigBtn'),
+            deleteAllBtn: document.getElementById('deleteAllBtn'),
+            configBtn: document.getElementById('configBtn'),
+            configModal: document.getElementById('configModal'),
+            closeModal: document.getElementById('closeModal'),
             uploadZone: document.getElementById('uploadZone'),
             chooseFileBtn: document.getElementById('chooseFileBtn'),
             fileInput: document.getElementById('fileInput'),
@@ -224,6 +269,7 @@
             emailBtn: document.getElementById('emailBtn'),
             openRawBtn: document.getElementById('openRawBtn'),
             newUploadBtn: document.getElementById('newUploadBtn'),
+            clearHistoryBtn: document.getElementById('clearHistoryBtn'),
             historyGrid: document.getElementById('historyGrid'),
             toast: document.getElementById('toast'),
             toastIcon: document.getElementById('toastIcon'),
@@ -236,7 +282,11 @@
         bindEvents();
 
         function bindEvents() {
-            el.saveConfigBtn.addEventListener('click', saveConfig);
+            el.configBtn.addEventListener('click', function() { el.configModal.classList.add('active'); });
+            el.closeModal.addEventListener('click', function() { el.configModal.classList.remove('active'); });
+            el.configModal.addEventListener('click', function(e) { if (e.target === el.configModal) el.configModal.classList.remove('active'); });
+            el.saveConfigBtn.addEventListener('click', function() { saveConfig(); el.configModal.classList.remove('active'); });
+            el.deleteAllBtn.addEventListener('click', deleteAllImages);
             el.chooseFileBtn.addEventListener('click', function(e) { e.stopPropagation(); el.fileInput.click(); });
             el.fileInput.addEventListener('change', handleFileSelect);
             el.uploadZone.addEventListener('click', function() { el.fileInput.click(); });
@@ -251,13 +301,7 @@
             el.emailBtn.addEventListener('click', function() { share('email'); });
             el.openRawBtn.addEventListener('click', function() { window.open(currentRawUrl, '_blank'); });
             el.newUploadBtn.addEventListener('click', clearSelection);
-            el.historyGrid.addEventListener('click', function(e) {
-                var item = e.target.closest('.history-item');
-                if (item) {
-                    var url = item.getAttribute('data-raw');
-                    if (url) window.open(url, '_blank');
-                }
-            });
+            el.clearHistoryBtn.addEventListener('click', clearHistory);
         }
 
         function saveConfig() {
@@ -315,7 +359,8 @@
 
         async function startUpload() {
             if (!GITHUB_TOKEN) {
-                showToast('Digite seu GitHub Token primeiro!', 'error');
+                showToast('Configure o token em Configuracoes!', 'error');
+                el.configModal.classList.add('active');
                 return;
             }
 
@@ -324,7 +369,6 @@
             el.uploadBtn.disabled = true;
 
             try {
-                // Verificar rate limit antes de comecar
                 updateProgress(2, 'Verificando limites...');
                 var rateRes = await fetch('https://api.github.com/rate_limit', {
                     headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }
@@ -339,7 +383,6 @@
                     }
                 }
 
-                // Verificar tamanho do repositorio e limpar imagens antigas se necessario
                 updateProgress(4, 'Verificando espaco...');
                 try {
                     var repoRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO, {
@@ -347,8 +390,8 @@
                     });
                     if (repoRes.ok) {
                         var repoData = await repoRes.json();
-                        var sizeMB = repoData.size / 1024; // size vem em KB
-                        if (sizeMB > 900) { // Se repo tem mais de 900MB, limpar imagens antigas
+                        var sizeMB = repoData.size / 1024;
+                        if (sizeMB > 900) {
                             updateProgress(6, 'Limpando imagens antigas...');
                             await cleanupOldImages();
                         }
@@ -361,7 +404,6 @@
                 var fileName = timestamp + '_' + randomId + '.' + ext;
                 var path = 'imagem/' + fileName;
 
-                // Upload direto
                 updateProgress(10, 'Enviando...');
                 var base64Data = currentImageData.split(',')[1];
 
@@ -408,17 +450,15 @@
                             throw new Error(error.message || 'Erro no upload');
                         }
                     } else if (error.message && error.message.indexOf('quota') > -1) {
-                        throw new Error('Limite de armazenamento atingido (1GB). Delete imagens antigas no repositorio.');
+                        throw new Error('Limite de armazenamento atingido (1GB). Delete imagens antigas.');
                     } else {
                         throw new Error(error.message || 'Erro no upload');
                     }
                 }
 
-                // Gerar URLs
                 currentRawUrl = 'https://raw.githubusercontent.com/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/main/' + path;
                 currentPublicUrl = 'https://' + GITHUB_OWNER + '.github.io/Imagem-URL/imagem/' + fileName;
 
-                // Salvar no historico
                 var historyItem = {
                     id: randomId, name: currentFile.name, size: currentFile.size,
                     rawUrl: currentRawUrl, publicUrl: currentPublicUrl, 
@@ -428,11 +468,9 @@
                 if (uploadHistory.length > 20) uploadHistory.pop();
                 localStorage.setItem('imageHostHistory', JSON.stringify(uploadHistory));
 
-                // ===== DELAY DE 20s NA BARRA DE PROGRESSO =====
-                // A barra vai de 10% ate 100% em 20 segundos
                 var startPercent = 10;
                 var endPercent = 100;
-                var duration = 20000; // 20 segundos
+                var duration = 20000;
                 var startTime = Date.now();
 
                 var progressInterval = setInterval(function() {
@@ -445,7 +483,6 @@
                         clearInterval(progressInterval);
                         updateProgress(100, 'Concluido!');
 
-                        // Mostrar resultado
                         setTimeout(function() {
                             el.uploadProgress.classList.remove('active');
                             el.resultSection.classList.add('active');
@@ -456,9 +493,9 @@
                             showToast('Upload concluido! Link pronto!', 'success');
                         }, 500);
                     } else {
-                        updateProgress(progress, 'Propagando... ' + secondsLeft + 's restantes');
+                        updateProgress(progress, 'Propagando... ' + secondsLeft + 's');
                     }
-                }, 100); // Atualiza a cada 100ms para suavidade
+                }, 100);
 
             } catch (error) {
                 el.uploadProgress.classList.remove('active');
@@ -470,7 +507,96 @@
             }
         }
 
-        
+        async function deleteImage(id, rawUrl, publicUrl) {
+            if (!confirm('Excluir esta imagem do GitHub?')) return;
+
+            try {
+                var fileName = rawUrl.split('/').pop();
+                var path = 'imagem/' + fileName;
+
+                var checkRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
+                    headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }
+                });
+
+                if (checkRes.ok) {
+                    var file = await checkRes.json();
+                    var deleteRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': 'Bearer ' + GITHUB_TOKEN,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: 'Delete image: ' + fileName,
+                            sha: file.sha
+                        })
+                    });
+
+                    if (deleteRes.ok) {
+                        uploadHistory = uploadHistory.filter(function(h) { return h.id !== id; });
+                        localStorage.setItem('imageHostHistory', JSON.stringify(uploadHistory));
+                        updateHistoryDisplay();
+                        showToast('Imagem excluida!', 'success');
+                    } else {
+                        throw new Error('Erro ao excluir');
+                    }
+                }
+            } catch (error) {
+                showToast('Erro ao excluir: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteAllImages() {
+            if (!GITHUB_TOKEN) {
+                showToast('Configure o token primeiro!', 'error');
+                return;
+            }
+            if (!confirm('ATENCAO: Isso vai excluir TODAS as imagens do repositorio. Continuar?')) return;
+
+            el.deleteAllBtn.disabled = true;
+            el.deleteAllBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Excluindo...';
+
+            try {
+                var deleted = 0;
+                var contentsRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/imagem', {
+                    headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }
+                });
+
+                if (contentsRes.ok) {
+                    var files = await contentsRes.json();
+                    for (var i = 0; i < files.length; i++) {
+                        var file = files[i];
+                        if (file.type === 'file') {
+                            try {
+                                await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + file.path, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'Authorization': 'Bearer ' + GITHUB_TOKEN,
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        message: 'Delete image: ' + file.name,
+                                        sha: file.sha
+                                    })
+                                });
+                                deleted++;
+                            } catch(e) {}
+                        }
+                    }
+                }
+
+                uploadHistory = [];
+                localStorage.removeItem('imageHostHistory');
+                updateHistoryDisplay();
+                showToast('Excluidas ' + deleted + ' imagens!', 'success');
+            } catch (error) {
+                showToast('Erro ao excluir: ' + error.message, 'error');
+            } finally {
+                el.deleteAllBtn.disabled = false;
+                el.deleteAllBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Excluir Todas as Imagens';
+            }
+        }
+
         async function cleanupOldImages() {
             try {
                 var contentsRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/imagem', {
@@ -478,7 +604,6 @@
                 });
                 if (contentsRes.ok) {
                     var files = await contentsRes.json();
-                    // Ordenar por data (mais antigos primeiro) e deletar os 5 mais antigos
                     files.sort(function(a, b) { return new Date(a.sha) - new Date(b.sha); });
                     var toDelete = files.slice(0, 5);
                     for (var i = 0; i < toDelete.length; i++) {
@@ -529,13 +654,13 @@
         function copyRaw() {
             el.rawLink.select();
             document.execCommand('copy');
-            showToast('Link direto copiado!', 'success');
+            showToast('Link copiado!', 'success');
         }
 
         function copyLink() {
             el.publicLink.select();
             document.execCommand('copy');
-            showToast('Link GitHub Pages copiado!', 'success');
+            showToast('Link copiado!', 'success');
         }
 
         function copyHtml() {
@@ -559,16 +684,30 @@
             }
         }
 
+        function clearHistory() {
+            if (uploadHistory.length === 0) return;
+            if (!confirm('Limpar historico local? (As imagens no GitHub nao serao excluidas)')) return;
+            uploadHistory = [];
+            localStorage.removeItem('imageHostHistory');
+            updateHistoryDisplay();
+            showToast('Historico limpo', 'success');
+        }
+
         function updateHistoryDisplay() {
             if (uploadHistory.length === 0) {
                 el.historyGrid.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">Nenhuma imagem ainda</p>';
                 return;
             }
             el.historyGrid.innerHTML = uploadHistory.map(function(item) {
-                return '<div class="history-item" data-raw="' + item.rawUrl + '">' +
-                    '<img src="' + item.data + '" class="history-item-image" alt="' + item.name + '">' +
-                    '<div class="history-item-info"><strong>' + item.name + '</strong><br>' + 
-                    formatFileSize(item.size) + ' &bull; ' + new Date(item.date).toLocaleDateString('pt-BR') + '</div></div>';
+                return '<div class="history-item" id="item-' + item.id + '">' +
+                    '<button class="delete-btn" onclick="deleteImage('' + item.id + '', '' + item.rawUrl + '', '' + item.publicUrl + '')" title="Excluir"><i class="fas fa-trash"></i></button>' +
+                    '<img src="' + item.data + '" class="history-item-image" onclick="window.open('' + item.rawUrl + '', '_blank')" alt="' + item.name + '">' +
+                    '<div class="history-item-info"><strong>' + item.name + '</strong>' + 
+                    formatFileSize(item.size) + ' &bull; ' + new Date(item.date).toLocaleDateString('pt-BR') + '</div>' +
+                    '<div class="history-item-actions">' +
+                    '<button class="history-item-btn" onclick="navigator.clipboard.writeText('' + item.rawUrl + '').then(function(){ showToast('Link copiado!', 'success'); })"><i class="fas fa-copy"></i> Link</button>' +
+                    '<button class="history-item-btn" onclick="window.open('' + item.rawUrl + '', '_blank')"><i class="fas fa-external-link-alt"></i> Abrir</button>' +
+                    '</div></div>';
             }).join('');
         }
 
