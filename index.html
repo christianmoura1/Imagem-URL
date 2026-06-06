@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ImageHost - Upload Real para GitHub</title>
+    <title>ImageHost - Upload para GitHub</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,104 +12,58 @@
             --primary: #6366f1; --primary-dark: #4f46e5; --primary-light: #818cf8;
             --bg: #0f0f1a; --bg-card: #1a1a2e; --bg-hover: #252542;
             --text: #e2e8f0; --text-muted: #94a3b8; --border: #2d2d44;
-            --success: #10b981; --error: #ef4444; --warning: #f59e0b;
+            --success: #10b981; --error: #ef4444;
         }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
         .bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
-        .bg-animation::before { content: ''; position: absolute; width: 150%; height: 150%; background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 20%, rgba(236, 72, 153, 0.08) 0%, transparent 50%); animation: float 20s ease-in-out infinite; }
-        @keyframes float { 0%, 100% { transform: translate(0, 0) rotate(0deg); } 33% { transform: translate(-30px, -30px) rotate(1deg); } 66% { transform: translate(20px, -20px) rotate(-1deg); } }
+        .bg-animation::before { content: ''; position: absolute; width: 150%; height: 150%; background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%); animation: float 20s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-20px, -20px); } }
         header { padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: rgba(15, 15, 26, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
         .logo { display: flex; align-items: center; gap: 0.75rem; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); }
-        .logo i { font-size: 1.75rem; }
-        nav a { color: var(--text-muted); text-decoration: none; margin-left: 2rem; font-weight: 500; transition: color 0.3s; }
-        nav a:hover { color: var(--primary-light); }
-        .container { max-width: 900px; margin: 0 auto; padding: 3rem 1.5rem; }
-        .hero { text-align: center; margin-bottom: 3rem; }
-        .hero h1 { font-size: 3rem; font-weight: 700; margin-bottom: 1rem; background: linear-gradient(135deg, var(--primary-light), #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .hero p { color: var(--text-muted); font-size: 1.125rem; max-width: 600px; margin: 0 auto; }
-        .stats-bar { display: flex; justify-content: center; gap: 3rem; margin-bottom: 3rem; flex-wrap: wrap; }
-        .stat-item { text-align: center; }
-        .stat-value { font-size: 2rem; font-weight: 700; color: var(--primary-light); }
-        .stat-label { color: var(--text-muted); font-size: 0.875rem; }
-        .upload-zone { border: 2px dashed var(--border); border-radius: 20px; padding: 3rem; text-align: center; background: var(--bg-card); transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; }
-        .upload-zone::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.1), transparent); transition: left 0.5s; }
-        .upload-zone:hover::before { left: 100%; }
-        .upload-zone:hover, .upload-zone.dragover { border-color: var(--primary); background: var(--bg-hover); transform: translateY(-2px); box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15); }
-        .upload-zone.dragover { border-style: solid; background: rgba(99, 102, 241, 0.05); }
-        .upload-icon { font-size: 4rem; color: var(--primary); margin-bottom: 1.5rem; display: inline-block; animation: bounce 2s infinite; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        .upload-zone h3 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-        .upload-zone p { color: var(--text-muted); margin-bottom: 1.5rem; }
-        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.875rem 2rem; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; border: none; transition: all 0.3s; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5); }
+        .container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+        .hero { text-align: center; margin-bottom: 2rem; }
+        .hero h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; background: linear-gradient(135deg, var(--primary-light), #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { color: var(--text-muted); font-size: 1rem; max-width: 500px; margin: 0 auto; }
+        .config-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; }
+        .config-section h3 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--primary-light); }
+        .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .config-input { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; color: var(--text); font-size: 0.9rem; width: 100%; outline: none; }
+        .config-input:focus { border-color: var(--primary); }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; transition: all 0.3s; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); }
         .btn-secondary { background: var(--bg-hover); color: var(--text); border: 1px solid var(--border); }
-        .btn-secondary:hover { background: var(--border); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .upload-zone { border: 2px dashed var(--border); border-radius: 16px; padding: 2.5rem; text-align: center; background: var(--bg-card); transition: all 0.3s; cursor: pointer; }
+        .upload-zone:hover, .upload-zone.dragover { border-color: var(--primary); background: var(--bg-hover); transform: translateY(-2px); }
+        .upload-icon { font-size: 3rem; color: var(--primary); margin-bottom: 1rem; display: inline-block; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         .file-input { display: none; }
-        .preview-section { display: none; margin-top: 2rem; background: var(--bg-card); border-radius: 20px; padding: 2rem; border: 1px solid var(--border); }
-        .preview-section.active { display: block; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .preview-header h3 { font-size: 1.25rem; }
-        .preview-image-container { width: 100%; max-height: 400px; border-radius: 12px; overflow: hidden; background: var(--bg); display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; }
-        .preview-image { max-width: 100%; max-height: 400px; object-fit: contain; }
-        .file-info { display: flex; gap: 2rem; margin-bottom: 1.5rem; padding: 1rem; background: var(--bg); border-radius: 12px; }
-        .file-info-item { display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.875rem; }
-        .file-info-item i { color: var(--primary-light); }
-        .upload-progress { display: none; margin-top: 2rem; }
-        .upload-progress.active { display: block; }
-        .progress-bar-container { background: var(--bg); border-radius: 10px; height: 8px; overflow: hidden; margin-bottom: 1rem; }
-        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-light)); border-radius: 10px; width: 0%; transition: width 0.3s ease; position: relative; }
-        .progress-bar::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: shimmer 1.5s infinite; }
-        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-        .progress-info { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.875rem; }
-        .result-section { display: none; margin-top: 2rem; background: var(--bg-card); border-radius: 20px; padding: 2rem; border: 1px solid var(--border); animation: fadeIn 0.5s ease; }
-        .result-section.active { display: block; }
-        .success-icon { width: 80px; height: 80px; background: linear-gradient(135deg, var(--success), #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2.5rem; color: white; animation: scaleIn 0.5s ease; }
-        @keyframes scaleIn { 0% { transform: scale(0); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
-        .result-section h3 { text-align: center; font-size: 1.5rem; margin-bottom: 0.5rem; }
-        .result-section > p { text-align: center; color: var(--text-muted); margin-bottom: 2rem; }
-        .link-box { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
-        .link-box input { flex: 1; background: transparent; border: none; color: var(--text); font-size: 0.9375rem; font-family: 'Courier New', monospace; outline: none; }
-        .link-box button { padding: 0.5rem 1rem; border-radius: 8px; border: none; background: var(--primary); color: white; cursor: pointer; font-weight: 600; transition: all 0.3s; white-space: nowrap; }
-        .link-box button:hover { background: var(--primary-dark); }
-        .link-box button.copied { background: var(--success); }
-        .share-buttons { display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.5rem; }
-        .share-btn { width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; font-size: 1.125rem; }
-        .share-btn:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-2px); }
-        .history-section { margin-top: 3rem; }
-        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .history-header h2 { font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
-        .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; }
-        .history-item { background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); transition: all 0.3s; cursor: pointer; }
-        .history-item:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); border-color: var(--primary); }
-        .history-item-image { width: 100%; height: 150px; object-fit: cover; background: var(--bg); }
-        .history-item-info { padding: 1rem; }
-        .history-item-info h4 { font-size: 0.875rem; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .history-item-info p { font-size: 0.75rem; color: var(--text-muted); }
-        .history-item-actions { display: flex; padding: 0 1rem 1rem; gap: 0.5rem; }
-        .history-item-actions button { flex: 1; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; font-size: 0.75rem; transition: all 0.3s; }
-        .history-item-actions button:hover { background: var(--primary); color: white; border-color: var(--primary); }
-        .empty-history { text-align: center; padding: 3rem; color: var(--text-muted); }
-        .empty-history i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
-        .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); transform: translateY(100px); opacity: 0; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 1000; }
+        .preview-section, .upload-progress, .result-section { display: none; margin-top: 1.5rem; background: var(--bg-card); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border); }
+        .preview-section.active, .upload-progress.active, .result-section.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .preview-image { max-width: 100%; max-height: 300px; border-radius: 8px; }
+        .file-info { display: flex; gap: 1.5rem; margin: 1rem 0; padding: 0.75rem; background: var(--bg); border-radius: 8px; font-size: 0.8rem; color: var(--text-muted); }
+        .progress-bar-container { background: var(--bg); border-radius: 8px; height: 6px; overflow: hidden; margin-bottom: 0.5rem; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-light)); width: 0%; transition: width 0.3s; }
+        .success-icon { width: 60px; height: 60px; background: linear-gradient(135deg, var(--success), #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 2rem; color: white; }
+        .link-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .link-box input { flex: 1; background: transparent; border: none; color: var(--text); font-size: 0.85rem; font-family: monospace; outline: none; }
+        .link-box button { padding: 0.4rem 0.8rem; border-radius: 6px; border: none; background: var(--primary); color: white; cursor: pointer; font-size: 0.8rem; }
+        .share-buttons { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem; }
+        .share-btn { width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; }
+        .share-btn:hover { background: var(--primary); color: white; }
+        .history-section { margin-top: 2rem; }
+        .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+        .history-item { background: var(--bg-card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; }
+        .history-item:hover { border-color: var(--primary); }
+        .history-item-image { width: 100%; height: 120px; object-fit: cover; }
+        .history-item-info { padding: 0.75rem; font-size: 0.75rem; }
+        .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 1000; }
         .toast.show { transform: translateY(0); opacity: 1; }
         .toast.success { border-color: var(--success); }
         .toast.error { border-color: var(--error); }
-        .toast-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; }
-        .toast.success .toast-icon { background: rgba(16, 185, 129, 0.2); color: var(--success); }
-        .toast.error .toast-icon { background: rgba(239, 68, 68, 0.2); color: var(--error); }
-        @media (max-width: 768px) { .hero h1 { font-size: 2rem; } .upload-zone { padding: 2rem 1rem; } .file-info { flex-direction: column; gap: 0.5rem; } .history-grid { grid-template-columns: repeat(2, 1fr); } nav a { margin-left: 1rem; font-size: 0.875rem; } }
-        .config-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; }
-        .config-section h3 { font-size: 1.125rem; margin-bottom: 1rem; color: var(--primary-light); }
-        .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .config-input { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; color: var(--text); font-size: 0.9375rem; width: 100%; outline: none; transition: border-color 0.3s; }
-        .config-input:focus { border-color: var(--primary); }
-        .config-input::placeholder { color: var(--text-muted); }
-        .config-hint { color: var(--text-muted); font-size: 0.75rem; margin-top: 0.5rem; }
-        .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 768px) { .config-grid { grid-template-columns: 1fr; } .hero h1 { font-size: 1.8rem; } }
     </style>
 <base target="_blank">
 </head>
@@ -117,141 +71,183 @@
     <div class="bg-animation"></div>
     <header>
         <div class="logo"><i class="fas fa-cloud-upload-alt"></i> ImageHost</div>
-        <nav><a href="#" onclick="showSection('upload')">Upload</a><a href="#" onclick="showSection('history')">Meus Uploads</a><a href="#" onclick="showSection('about')">Sobre</a></nav>
     </header>
     <div class="container">
         <div class="hero">
-            <h1>Hospede suas imagens no GitHub</h1>
-            <p>Upload real para seu repositorio GitHub Pages. Links que funcionam de verdade!</p>
-        </div>
-        <div class="stats-bar">
-            <div class="stat-item"><div class="stat-value" id="totalUploads">0</div><div class="stat-label">Imagens Hospedadas</div></div>
-            <div class="stat-item"><div class="stat-value">GitHub</div><div class="stat-label">Hospedagem</div></div>
-            <div class="stat-item"><div class="stat-value">100%</div><div class="stat-label">Gratuito</div></div>
+            <h1>Hospede suas imagens</h1>
+            <p>Upload real para GitHub Pages. Links funcionais!</p>
         </div>
 
-        <div class="config-section" id="configSection">
-            <h3><i class="fas fa-cog"></i> Configuracao do GitHub</h3>
+        <div class="config-section">
+            <h3><i class="fas fa-cog"></i> Configuracao GitHub</h3>
             <div class="config-grid">
-                <input type="text" class="config-input" id="githubToken" placeholder="GitHub Token (ghp_...)" value="">
-                <input type="text" class="config-input" id="githubRepo" placeholder="Nome do repositorio" value="Imagem-URL">
+                <input type="text" class="config-input" id="githubToken" placeholder="GitHub Token (ghp_...)">
+                <input type="text" class="config-input" id="githubRepo" value="Imagem-URL" readonly>
             </div>
-            <div class="config-hint">
-                <i class="fas fa-info-circle"></i> 
-                Token: <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--primary-light);">github.com/settings/tokens</a> | 
-                Repo: Imagem-URL | Pasta: img/
-            </div>
-            <button class="btn btn-primary" style="margin-top: 1rem;" onclick="saveConfig()">
+            <p style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.5rem;">
+                <i class="fas fa-info-circle"></i> Token em <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--primary-light);">github.com/settings/tokens</a> | Repo: Imagem-URL | Pasta: img/
+            </p>
+            <button class="btn btn-primary" style="margin-top: 0.75rem;" id="saveConfigBtn">
                 <i class="fas fa-save"></i> Salvar Configuracao
             </button>
         </div>
 
-        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-zone" id="uploadZone">
             <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
             <h3>Arraste sua imagem aqui</h3>
-            <p>ou clique para selecionar um arquivo</p>
-            <button class="btn btn-primary" onclick="event.stopPropagation(); document.getElementById('fileInput').click()">
+            <p style="color: var(--text-muted); margin: 0.5rem 0 1rem;">ou clique para selecionar</p>
+            <button class="btn btn-primary" id="chooseFileBtn">
                 <i class="fas fa-plus"></i> Escolher Imagem
             </button>
-            <input type="file" id="fileInput" class="file-input" accept="image/*" onchange="handleFileSelect(event)">
+            <input type="file" id="fileInput" class="file-input" accept="image/*">
         </div>
 
         <div class="preview-section" id="previewSection">
-            <div class="preview-header">
-                <h3><i class="fas fa-eye"></i> Pre-visualizacao</h3>
-                <button class="btn btn-secondary" onclick="clearSelection()"><i class="fas fa-times"></i> Cancelar</button>
-            </div>
-            <div class="preview-image-container"><img id="previewImage" class="preview-image" alt="Preview"></div>
+            <h3 style="margin-bottom: 1rem;"><i class="fas fa-eye"></i> Pre-visualizacao</h3>
+            <img id="previewImage" class="preview-image" alt="Preview">
             <div class="file-info">
-                <div class="file-info-item"><i class="fas fa-file-image"></i><span id="fileName">imagem.jpg</span></div>
-                <div class="file-info-item"><i class="fas fa-weight-hanging"></i><span id="fileSize">2.5 MB</span></div>
-                <div class="file-info-item"><i class="fas fa-expand"></i><span id="fileDimensions">1920 x 1080</span></div>
+                <span><i class="fas fa-file-image"></i> <span id="fileName">-</span></span>
+                <span><i class="fas fa-weight-hanging"></i> <span id="fileSize">-</span></span>
+                <span><i class="fas fa-expand"></i> <span id="fileDimensions">-</span></span>
             </div>
-            <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="startUpload()" id="uploadBtn">
+            <button class="btn btn-primary" style="width: 100%; justify-content: center;" id="uploadBtn">
                 <i class="fas fa-upload"></i> Fazer Upload para GitHub
+            </button>
+            <button class="btn btn-secondary" style="width: 100%; justify-content: center; margin-top: 0.5rem;" id="cancelBtn">
+                <i class="fas fa-times"></i> Cancelar
             </button>
         </div>
 
         <div class="upload-progress" id="uploadProgress">
             <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
-            <div class="progress-info"><span id="progressText">Preparando...</span><span id="progressPercent">0%</span></div>
+            <div style="display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.8rem;">
+                <span id="progressText">Preparando...</span>
+                <span id="progressPercent">0%</span>
+            </div>
         </div>
 
         <div class="result-section" id="resultSection">
             <div class="success-icon"><i class="fas fa-check"></i></div>
-            <h3>Upload Concluido!</h3>
-            <p>Sua imagem foi salva no GitHub. O link pode levar 1-2 minutos para funcionar.</p>
+            <h3 style="text-align: center;">Upload Concluido!</h3>
+            <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Aguarde 1-2 min para o GitHub Pages atualizar.</p>
             <div class="link-box">
                 <i class="fas fa-link" style="color: var(--primary-light);"></i>
-                <input type="text" id="publicLink" readonly value="">
-                <button onclick="copyLink()" id="copyBtn"><i class="fas fa-copy"></i> Copiar</button>
+                <input type="text" id="publicLink" readonly>
+                <button id="copyLinkBtn"><i class="fas fa-copy"></i></button>
             </div>
             <div class="link-box">
                 <i class="fas fa-code" style="color: var(--primary-light);"></i>
-                <input type="text" id="htmlLink" readonly value="">
-                <button onclick="copyHtml()" id="copyHtmlBtn"><i class="fas fa-copy"></i> Copiar HTML</button>
+                <input type="text" id="htmlLink" readonly>
+                <button id="copyHtmlBtn"><i class="fas fa-copy"></i></button>
             </div>
             <div class="share-buttons">
-                <button class="share-btn" onclick="shareTwitter()" title="Twitter"><i class="fab fa-twitter"></i></button>
-                <button class="share-btn" onclick="shareFacebook()" title="Facebook"><i class="fab fa-facebook-f"></i></button>
-                <button class="share-btn" onclick="shareWhatsApp()" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
-                <button class="share-btn" onclick="shareEmail()" title="Email"><i class="fas fa-envelope"></i></button>
-                <button class="share-btn" onclick="openLink()" title="Abrir Link"><i class="fas fa-external-link-alt"></i></button>
+                <button class="share-btn" id="twitterBtn" title="Twitter"><i class="fab fa-twitter"></i></button>
+                <button class="share-btn" id="facebookBtn" title="Facebook"><i class="fab fa-facebook-f"></i></button>
+                <button class="share-btn" id="whatsappBtn" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
+                <button class="share-btn" id="emailBtn" title="Email"><i class="fas fa-envelope"></i></button>
+                <button class="share-btn" id="openLinkBtn" title="Abrir"><i class="fas fa-external-link-alt"></i></button>
             </div>
-            <button class="btn btn-secondary" style="width: 100%; margin-top: 1.5rem; justify-content: center;" onclick="clearSelection()">
-                <i class="fas fa-plus"></i> Enviar Outra Imagem
+            <button class="btn btn-secondary" style="width: 100%; margin-top: 1rem; justify-content: center;" id="newUploadBtn">
+                <i class="fas fa-plus"></i> Nova Imagem
             </button>
         </div>
 
-        <div class="history-section" id="historySection">
-            <div class="history-header">
-                <h2><i class="fas fa-history"></i> Uploads Recentes</h2>
-                <button class="btn btn-secondary" onclick="clearHistory()" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
-                    <i class="fas fa-trash"></i> Limpar Historico
-                </button>
-            </div>
-            <div class="history-grid" id="historyGrid">
-                <div class="empty-history"><i class="fas fa-images"></i><p>Nenhuma imagem enviada ainda</p></div>
-            </div>
+        <div class="history-section">
+            <h2 style="font-size: 1.2rem; margin-bottom: 1rem;"><i class="fas fa-history"></i> Uploads Recentes</h2>
+            <div class="history-grid" id="historyGrid"></div>
         </div>
     </div>
 
     <div class="toast" id="toast">
-        <div class="toast-icon"><i class="fas fa-check"></i></div>
-        <div class="toast-message">Mensagem</div>
+        <div style="width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;" id="toastIcon">
+            <i class="fas fa-check"></i>
+        </div>
+        <span id="toastMessage">Mensagem</span>
     </div>
 
     <script>
-        // Configuracao - Token sera carregado do localStorage ou input
         var GITHUB_TOKEN = localStorage.getItem('githubToken') || '';
         var GITHUB_OWNER = 'christianmoura1';
         var GITHUB_REPO = 'Imagem-URL';
-
         var currentFile = null;
         var currentImageData = null;
-        var uploadHistory = JSON.parse(localStorage.getItem('imageHostHistory') || '[]');
         var currentPublicUrl = '';
+        var uploadHistory = JSON.parse(localStorage.getItem('imageHostHistory') || '[]');
 
-        // Carregar configuracao salva
-        if (GITHUB_TOKEN) {
-            document.getElementById('githubToken').value = GITHUB_TOKEN;
+        var el = {
+            token: document.getElementById('githubToken'),
+            repo: document.getElementById('githubRepo'),
+            saveConfigBtn: document.getElementById('saveConfigBtn'),
+            uploadZone: document.getElementById('uploadZone'),
+            chooseFileBtn: document.getElementById('chooseFileBtn'),
+            fileInput: document.getElementById('fileInput'),
+            previewSection: document.getElementById('previewSection'),
+            previewImage: document.getElementById('previewImage'),
+            fileName: document.getElementById('fileName'),
+            fileSize: document.getElementById('fileSize'),
+            fileDimensions: document.getElementById('fileDimensions'),
+            uploadBtn: document.getElementById('uploadBtn'),
+            cancelBtn: document.getElementById('cancelBtn'),
+            uploadProgress: document.getElementById('uploadProgress'),
+            progressBar: document.getElementById('progressBar'),
+            progressText: document.getElementById('progressText'),
+            progressPercent: document.getElementById('progressPercent'),
+            resultSection: document.getElementById('resultSection'),
+            publicLink: document.getElementById('publicLink'),
+            htmlLink: document.getElementById('htmlLink'),
+            copyLinkBtn: document.getElementById('copyLinkBtn'),
+            copyHtmlBtn: document.getElementById('copyHtmlBtn'),
+            twitterBtn: document.getElementById('twitterBtn'),
+            facebookBtn: document.getElementById('facebookBtn'),
+            whatsappBtn: document.getElementById('whatsappBtn'),
+            emailBtn: document.getElementById('emailBtn'),
+            openLinkBtn: document.getElementById('openLinkBtn'),
+            newUploadBtn: document.getElementById('newUploadBtn'),
+            historyGrid: document.getElementById('historyGrid'),
+            toast: document.getElementById('toast'),
+            toastIcon: document.getElementById('toastIcon'),
+            toastMessage: document.getElementById('toastMessage')
+        };
+
+        el.token.value = GITHUB_TOKEN;
+        updateHistoryDisplay();
+        setupDragAndDrop();
+        bindEvents();
+
+        function bindEvents() {
+            el.saveConfigBtn.addEventListener('click', saveConfig);
+            el.chooseFileBtn.addEventListener('click', function(e) { e.stopPropagation(); el.fileInput.click(); });
+            el.fileInput.addEventListener('change', handleFileSelect);
+            el.uploadZone.addEventListener('click', function() { el.fileInput.click(); });
+            el.uploadBtn.addEventListener('click', startUpload);
+            el.cancelBtn.addEventListener('click', clearSelection);
+            el.copyLinkBtn.addEventListener('click', copyLink);
+            el.copyHtmlBtn.addEventListener('click', copyHtml);
+            el.twitterBtn.addEventListener('click', function() { share('twitter'); });
+            el.facebookBtn.addEventListener('click', function() { share('facebook'); });
+            el.whatsappBtn.addEventListener('click', function() { share('whatsapp'); });
+            el.emailBtn.addEventListener('click', function() { share('email'); });
+            el.openLinkBtn.addEventListener('click', function() { window.open(currentPublicUrl, '_blank'); });
+            el.newUploadBtn.addEventListener('click', clearSelection);
+
+            // Event delegation para o historico
+            el.historyGrid.addEventListener('click', function(e) {
+                var item = e.target.closest('.history-item');
+                if (item) {
+                    var url = item.getAttribute('data-url');
+                    if (url) window.open(url, '_blank');
+                }
+            });
         }
-        document.getElementById('githubRepo').value = GITHUB_REPO;
 
         function saveConfig() {
-            GITHUB_TOKEN = document.getElementById('githubToken').value.trim();
+            GITHUB_TOKEN = el.token.value.trim();
             localStorage.setItem('githubToken', GITHUB_TOKEN);
             showToast('Configuracao salva!', 'success');
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            updateHistoryDisplay();
-            updateStats();
-            setupDragAndDrop();
-        });
-
         function setupDragAndDrop() {
-            var zone = document.getElementById('uploadZone');
+            var zone = el.uploadZone;
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function(e) {
                 zone.addEventListener(e, function(ev) { ev.preventDefault(); ev.stopPropagation(); }, false);
             });
@@ -272,11 +268,11 @@
 
         function handleFile(file) {
             if (!file.type.startsWith('image/')) {
-                showToast('Selecione apenas arquivos de imagem.', 'error');
+                showToast('Selecione apenas imagens.', 'error');
                 return;
             }
             if (file.size > 5 * 1024 * 1024) {
-                showToast('Maximo 5MB para GitHub API.', 'error');
+                showToast('Maximo 5MB.', 'error');
                 return;
             }
             currentFile = file;
@@ -285,12 +281,12 @@
                 currentImageData = e.target.result;
                 var img = new Image();
                 img.onload = function() {
-                    document.getElementById('previewImage').src = currentImageData;
-                    document.getElementById('fileName').textContent = file.name;
-                    document.getElementById('fileSize').textContent = formatFileSize(file.size);
-                    document.getElementById('fileDimensions').textContent = img.width + ' x ' + img.height;
-                    document.getElementById('previewSection').classList.add('active');
-                    document.getElementById('uploadZone').style.display = 'none';
+                    el.previewImage.src = currentImageData;
+                    el.fileName.textContent = file.name;
+                    el.fileSize.textContent = formatFileSize(file.size);
+                    el.fileDimensions.textContent = img.width + ' x ' + img.height;
+                    el.previewSection.classList.add('active');
+                    el.uploadZone.style.display = 'none';
                 };
                 img.src = currentImageData;
             };
@@ -299,23 +295,22 @@
 
         async function startUpload() {
             if (!GITHUB_TOKEN) {
-                showToast('Configure seu GitHub Token primeiro!', 'error');
+                showToast('Digite seu GitHub Token primeiro!', 'error');
                 return;
             }
 
-            document.getElementById('previewSection').classList.remove('active');
-            document.getElementById('uploadProgress').classList.add('active');
-            var btn = document.getElementById('uploadBtn');
-            btn.disabled = true;
+            el.previewSection.classList.remove('active');
+            el.uploadProgress.classList.add('active');
+            el.uploadBtn.disabled = true;
 
             try {
                 var timestamp = Date.now();
-                var randomId = Math.random().toString(36).substring(2, 8);
-                var safeName = currentFile.name.replace(/[^a-zA-Z0-9.]/g, '-');
-                var fileName = 'img_' + timestamp + '_' + randomId + '_' + safeName;
+                var randomId = Math.random().toString(36).substring(2, 6);
+                var ext = currentFile.name.split('.').pop().toLowerCase();
+                var fileName = timestamp + '_' + randomId + '.' + ext;
                 var path = 'img/' + fileName;
 
-                updateProgress(10, 'Verificando repositorio...');
+                updateProgress(10, 'Verificando...');
                 var sha = undefined;
                 try {
                     var checkRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
@@ -328,7 +323,7 @@
                     }
                 } catch(e) {}
 
-                updateProgress(40, 'Enviando para GitHub...');
+                updateProgress(40, 'Enviando...');
                 var base64Data = currentImageData.split(',')[1];
 
                 var uploadRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
@@ -354,13 +349,8 @@
                 currentPublicUrl = 'https://' + GITHUB_OWNER + '.github.io/Imagem-URL/' + path;
 
                 var historyItem = {
-                    id: randomId,
-                    name: currentFile.name,
-                    size: currentFile.size,
-                    url: currentPublicUrl,
-                    data: currentImageData,
-                    date: new Date().toISOString(),
-                    path: path
+                    id: randomId, name: currentFile.name, size: currentFile.size,
+                    url: currentPublicUrl, data: currentImageData, date: new Date().toISOString()
                 };
                 uploadHistory.unshift(historyItem);
                 if (uploadHistory.length > 20) uploadHistory.pop();
@@ -368,178 +358,97 @@
 
                 updateProgress(100, 'Concluido!');
                 setTimeout(function() {
-                    document.getElementById('uploadProgress').classList.remove('active');
-                    document.getElementById('resultSection').classList.add('active');
-                    document.getElementById('publicLink').value = currentPublicUrl;
-                    document.getElementById('htmlLink').value = '<img src="' + currentPublicUrl + '" alt="' + currentFile.name + '" />';
+                    el.uploadProgress.classList.remove('active');
+                    el.resultSection.classList.add('active');
+                    el.publicLink.value = currentPublicUrl;
+                    el.htmlLink.value = '<img src="' + currentPublicUrl + '" alt="' + currentFile.name + '" />';
                     updateHistoryDisplay();
-                    updateStats();
-                    showToast('Upload concluido! Aguarde 1-2 min para o GitHub Pages atualizar.', 'success');
+                    showToast('Upload concluido! Aguarde 1-2 min.', 'success');
                 }, 500);
 
             } catch (error) {
-                document.getElementById('uploadProgress').classList.remove('active');
-                document.getElementById('previewSection').classList.add('active');
+                el.uploadProgress.classList.remove('active');
+                el.previewSection.classList.add('active');
                 showToast('Erro: ' + error.message, 'error');
                 console.error(error);
             } finally {
-                btn.disabled = false;
+                el.uploadBtn.disabled = false;
             }
         }
 
         function updateProgress(percent, text) {
-            document.getElementById('progressBar').style.width = percent + '%';
-            document.getElementById('progressPercent').textContent = percent + '%';
-            document.getElementById('progressText').textContent = text;
+            el.progressBar.style.width = percent + '%';
+            el.progressPercent.textContent = percent + '%';
+            el.progressText.textContent = text;
         }
 
         function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
+            if (bytes === 0) return '0 B';
             var k = 1024;
-            var sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            var sizes = ['B', 'KB', 'MB', 'GB'];
             var i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         }
 
         function clearSelection() {
             currentFile = null;
             currentImageData = null;
-            document.getElementById('fileInput').value = '';
-            document.getElementById('previewSection').classList.remove('active');
-            document.getElementById('uploadProgress').classList.remove('active');
-            document.getElementById('resultSection').classList.remove('active');
-            document.getElementById('uploadZone').style.display = 'block';
-            document.getElementById('progressBar').style.width = '0%';
+            el.fileInput.value = '';
+            el.previewSection.classList.remove('active');
+            el.uploadProgress.classList.remove('active');
+            el.resultSection.classList.remove('active');
+            el.uploadZone.style.display = 'block';
+            el.progressBar.style.width = '0%';
         }
 
         function copyLink() {
-            var input = document.getElementById('publicLink');
-            input.select();
+            el.publicLink.select();
             document.execCommand('copy');
-            var btn = document.getElementById('copyBtn');
-            var originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-            btn.classList.add('copied');
             showToast('Link copiado!', 'success');
-            setTimeout(function() {
-                btn.innerHTML = originalHTML;
-                btn.classList.remove('copied');
-            }, 2000);
         }
 
         function copyHtml() {
-            var input = document.getElementById('htmlLink');
-            input.select();
+            el.htmlLink.select();
             document.execCommand('copy');
-            var btn = document.getElementById('copyHtmlBtn');
-            var originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-            btn.classList.add('copied');
             showToast('HTML copiado!', 'success');
-            setTimeout(function() {
-                btn.innerHTML = originalHTML;
-                btn.classList.remove('copied');
-            }, 2000);
         }
 
-        function openLink() {
-            window.open(currentPublicUrl, '_blank');
-        }
-
-        function shareTwitter() {
-            window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent('Confira: ') + '&url=' + encodeURIComponent(currentPublicUrl), '_blank');
-        }
-
-        function shareFacebook() {
-            window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(currentPublicUrl), '_blank');
-        }
-
-        function shareWhatsApp() {
-            window.open('https://wa.me/?text=' + encodeURIComponent(currentPublicUrl), '_blank');
-        }
-
-        function shareEmail() {
-            window.location.href = 'mailto:?subject=Imagem&body=' + encodeURIComponent(currentPublicUrl);
+        function share(platform) {
+            var url = encodeURIComponent(currentPublicUrl);
+            var urls = {
+                twitter: 'https://twitter.com/intent/tweet?url=' + url,
+                facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + url,
+                whatsapp: 'https://wa.me/?text=' + url,
+                email: 'mailto:?subject=Imagem&body=' + url
+            };
+            if (platform === 'email') {
+                window.location.href = urls[platform];
+            } else {
+                window.open(urls[platform], '_blank');
+            }
         }
 
         function updateHistoryDisplay() {
-            var grid = document.getElementById('historyGrid');
             if (uploadHistory.length === 0) {
-                grid.innerHTML = '<div class="empty-history" style="grid-column: 1 / -1;"><i class="fas fa-images"></i><p>Nenhuma imagem enviada ainda</p></div>';
+                el.historyGrid.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">Nenhuma imagem ainda</p>';
                 return;
             }
-            grid.innerHTML = uploadHistory.map(function(item) {
-                return '<div class="history-item" onclick="loadFromHistory('' + item.id + '')">' +
+            el.historyGrid.innerHTML = uploadHistory.map(function(item) {
+                return '<div class="history-item" data-url="' + item.url + '">' +
                     '<img src="' + item.data + '" class="history-item-image" alt="' + item.name + '">' +
-                    '<div class="history-item-info"><h4>' + item.name + '</h4><p>' + formatFileSize(item.size) + ' &bull; ' + new Date(item.date).toLocaleDateString('pt-BR') + '</p></div>' +
-                    '<div class="history-item-actions" onclick="event.stopPropagation()">' +
-                    '<button onclick="copyHistoryLink('' + item.url + '')"><i class="fas fa-copy"></i> Link</button>' +
-                    '<button onclick="deleteHistoryItem('' + item.id + '')"><i class="fas fa-trash"></i></button>' +
-                    '</div></div>';
+                    '<div class="history-item-info"><strong>' + item.name + '</strong><br>' + 
+                    formatFileSize(item.size) + ' &bull; ' + new Date(item.date).toLocaleDateString('pt-BR') + '</div></div>';
             }).join('');
         }
 
-        function loadFromHistory(id) {
-            var item = uploadHistory.find(function(h) { return h.id === id; });
-            if (!item) return;
-            currentFile = { name: item.name, size: item.size };
-            currentImageData = item.data;
-            currentPublicUrl = item.url;
-            document.getElementById('publicLink').value = currentPublicUrl;
-            document.getElementById('htmlLink').value = '<img src="' + currentPublicUrl + '" alt="' + item.name + '" />';
-            document.getElementById('resultSection').classList.add('active');
-            document.getElementById('uploadZone').style.display = 'none';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function copyHistoryLink(url) {
-            navigator.clipboard.writeText(url).then(function() {
-                showToast('Link copiado!', 'success');
-            });
-        }
-
-        function deleteHistoryItem(id) {
-            uploadHistory = uploadHistory.filter(function(h) { return h.id !== id; });
-            localStorage.setItem('imageHostHistory', JSON.stringify(uploadHistory));
-            updateHistoryDisplay();
-            updateStats();
-            showToast('Removido', 'success');
-        }
-
-        function clearHistory() {
-            if (uploadHistory.length === 0) return;
-            if (!confirm('Limpar todo o historico?')) return;
-            uploadHistory = [];
-            localStorage.removeItem('imageHostHistory');
-            updateHistoryDisplay();
-            updateStats();
-            showToast('Historico limpo', 'success');
-        }
-
-        function updateStats() {
-            document.getElementById('totalUploads').textContent = uploadHistory.length;
-        }
-
         function showToast(message, type) {
-            var toast = document.getElementById('toast');
-            toast.className = 'toast ' + type;
-            toast.querySelector('.toast-message').textContent = message;
-            toast.querySelector('.toast-icon i').className = type === 'success' ? 'fas fa-check' : 'fas fa-exclamation-triangle';
-            toast.classList.add('show');
-            setTimeout(function() {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        function showSection(section) {
-            if (section === 'upload') {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                clearSelection();
-            } else if (section === 'history') {
-                document.getElementById('historySection').scrollIntoView({ behavior: 'smooth' });
-            } else if (section === 'about') {
-                showToast('ImageHost v2.0 - Upload real para GitHub via API', 'success');
-            }
+            el.toast.className = 'toast ' + type;
+            el.toastIcon.innerHTML = type === 'success' ? '<i class="fas fa-check"></i>' : '<i class="fas fa-exclamation-triangle"></i>';
+            el.toastIcon.style.background = type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+            el.toastIcon.style.color = type === 'success' ? 'var(--success)' : 'var(--error)';
+            el.toastMessage.textContent = message;
+            el.toast.classList.add('show');
+            setTimeout(function() { el.toast.classList.remove('show'); }, 3000);
         }
     </script>
 </body>
