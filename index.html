@@ -324,27 +324,44 @@
             el.uploadBtn.disabled = true;
 
             try {
+                // Verificar rate limit antes de comecar
+                updateProgress(2, 'Verificando limites...');
+                var rateRes = await fetch('https://api.github.com/rate_limit', {
+                    headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }
+                });
+                if (rateRes.ok) {
+                    var rateData = await rateRes.json();
+                    var remaining = rateData.resources.core.remaining;
+                    if (remaining < 5) {
+                        var resetTime = new Date(rateData.resources.core.reset * 1000);
+                        var minutes = Math.ceil((resetTime - Date.now()) / 60000);
+                        throw new Error('Limite de requisicoes atingido. Aguarde ' + minutes + ' minutos.');
+                    }
+                }
+
+                // Verificar tamanho do repositorio e limpar imagens antigas se necessario
+                updateProgress(4, 'Verificando espaco...');
+                try {
+                    var repoRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO, {
+                        headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }
+                    });
+                    if (repoRes.ok) {
+                        var repoData = await repoRes.json();
+                        var sizeMB = repoData.size / 1024; // size vem em KB
+                        if (sizeMB > 900) { // Se repo tem mais de 900MB, limpar imagens antigas
+                            updateProgress(6, 'Limpando imagens antigas...');
+                            await cleanupOldImages();
+                        }
+                    }
+                } catch(e) { console.log('Erro ao verificar tamanho:', e); }
+
                 var timestamp = Date.now();
                 var randomId = Math.random().toString(36).substring(2, 6);
                 var ext = currentFile.name.split('.').pop().toLowerCase();
                 var fileName = timestamp + '_' + randomId + '.' + ext;
                 var path = 'imagem/' + fileName;
 
-                // Verificar arquivo existente
-                updateProgress(5, 'Verificando...');
-                var sha = undefined;
-                try {
-                    var checkRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
-                        method: 'GET',
-                        headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + GITHUB_TOKEN }
-                    });
-                    if (checkRes.ok) {
-                        var existing = await checkRes.json();
-                        sha = existing.sha;
-                    }
-                } catch(e) {}
-
-                // Upload para GitHub
+                // Upload direto
                 updateProgress(10, 'Enviando...');
                 var base64Data = currentImageData.split(',')[1];
 
@@ -357,14 +374,44 @@
                     },
                     body: JSON.stringify({
                         message: 'Add image: ' + currentFile.name,
-                        content: base64Data,
-                        sha: sha
+                        content: base64Data
                     })
                 });
 
                 if (!uploadRes.ok) {
                     var error = await uploadRes.json();
-                    throw new Error(error.message || 'Erro no upload');
+                    if (uploadRes.status === 422 && error.message && error.message.indexOf('sha') > -1) {
+                        updateProgress(12, 'Arquivo existe, atualizando...');
+                        var checkRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
+                            headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + GITHUB_TOKEN }
+                        });
+                        if (checkRes.ok) {
+                            var existing = await checkRes.json();
+                            uploadRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
+                                method: 'PUT',
+                                headers: {
+                                    'Accept': 'application/vnd.github+json',
+                                    'Authorization': 'Bearer ' + GITHUB_TOKEN,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    message: 'Update image: ' + currentFile.name,
+                                    content: base64Data,
+                                    sha: existing.sha
+                                })
+                            });
+                            if (!uploadRes.ok) {
+                                error = await uploadRes.json();
+                                throw new Error(error.message || 'Erro ao atualizar');
+                            }
+                        } else {
+                            throw new Error(error.message || 'Erro no upload');
+                        }
+                    } else if (error.message && error.message.indexOf('quota') > -1) {
+                        throw new Error('Limite de armazenamento atingido (1GB). Delete imagens antigas no repositorio.');
+                    } else {
+                        throw new Error(error.message || 'Erro no upload');
+                    }
                 }
 
                 // Gerar URLs
@@ -421,6 +468,37 @@
             } finally {
                 el.uploadBtn.disabled = false;
             }
+        }
+
+        
+        async function cleanupOldImages() {
+            try {
+                var contentsRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/imagem', {
+                    headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }
+                });
+                if (contentsRes.ok) {
+                    var files = await contentsRes.json();
+                    // Ordenar por data (mais antigos primeiro) e deletar os 5 mais antigos
+                    files.sort(function(a, b) { return new Date(a.sha) - new Date(b.sha); });
+                    var toDelete = files.slice(0, 5);
+                    for (var i = 0; i < toDelete.length; i++) {
+                        var file = toDelete[i];
+                        if (file.type === 'file') {
+                            await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + file.path, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Authorization': 'Bearer ' + GITHUB_TOKEN,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    message: 'Delete old image: ' + file.name,
+                                    sha: file.sha
+                                })
+                            });
+                        }
+                    }
+                }
+            } catch(e) { console.log('Erro na limpeza:', e); }
         }
 
         function updateProgress(percent, text) {
