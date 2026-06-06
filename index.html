@@ -222,50 +222,68 @@
     </div>
 
     <script>
-        const GITHUB_TOKEN = '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';
-        const GITHUB_OWNER = 'christianmoura1';
-        const GITHUB_REPO = 'Imagem-URL';
+        // Configuracao - Token sera carregado do localStorage ou input
+        var GITHUB_TOKEN = localStorage.getItem('githubToken') || '';
+        var GITHUB_OWNER = 'christianmoura1';
+        var GITHUB_REPO = 'Imagem-URL';
 
-        let currentFile = null;
-        let currentImageData = null;
-        let uploadHistory = JSON.parse(localStorage.getItem('imageHostHistory') || '[]');
-        let currentPublicUrl = '';
+        var currentFile = null;
+        var currentImageData = null;
+        var uploadHistory = JSON.parse(localStorage.getItem('imageHostHistory') || '[]');
+        var currentPublicUrl = '';
 
-        document.getElementById('githubToken').value = GITHUB_TOKEN;
+        // Carregar configuracao salva
+        if (GITHUB_TOKEN) {
+            document.getElementById('githubToken').value = GITHUB_TOKEN;
+        }
         document.getElementById('githubRepo').value = GITHUB_REPO;
 
         function saveConfig() {
-            localStorage.setItem('githubToken', document.getElementById('githubToken').value.trim());
-            localStorage.setItem('githubRepo', document.getElementById('githubRepo').value.trim());
+            GITHUB_TOKEN = document.getElementById('githubToken').value.trim();
+            localStorage.setItem('githubToken', GITHUB_TOKEN);
             showToast('Configuracao salva!', 'success');
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
             updateHistoryDisplay();
             updateStats();
             setupDragAndDrop();
         });
 
         function setupDragAndDrop() {
-            const zone = document.getElementById('uploadZone');
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => {
-                zone.addEventListener(e, (ev) => { ev.preventDefault(); ev.stopPropagation(); }, false);
+            var zone = document.getElementById('uploadZone');
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function(e) {
+                zone.addEventListener(e, function(ev) { ev.preventDefault(); ev.stopPropagation(); }, false);
             });
-            ['dragenter', 'dragover'].forEach(e => zone.addEventListener(e, () => zone.classList.add('dragover'), false));
-            ['dragleave', 'drop'].forEach(e => zone.addEventListener(e, () => zone.classList.remove('dragover'), false));
-            zone.addEventListener('drop', (e) => { if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); }, false);
+            ['dragenter', 'dragover'].forEach(function(e) {
+                zone.addEventListener(e, function() { zone.classList.add('dragover'); }, false);
+            });
+            ['dragleave', 'drop'].forEach(function(e) {
+                zone.addEventListener(e, function() { zone.classList.remove('dragover'); }, false);
+            });
+            zone.addEventListener('drop', function(e) {
+                if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+            }, false);
         }
 
-        function handleFileSelect(event) { if (event.target.files[0]) handleFile(event.target.files[0]); }
+        function handleFileSelect(event) {
+            if (event.target.files[0]) handleFile(event.target.files[0]);
+        }
 
         function handleFile(file) {
-            if (!file.type.startsWith('image/')) { showToast('Selecione apenas arquivos de imagem.', 'error'); return; }
-            if (file.size > 5 * 1024 * 1024) { showToast('Maximo 5MB para GitHub API.', 'error'); return; }
+            if (!file.type.startsWith('image/')) {
+                showToast('Selecione apenas arquivos de imagem.', 'error');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('Maximo 5MB para GitHub API.', 'error');
+                return;
+            }
             currentFile = file;
-            const reader = new FileReader();
+            var reader = new FileReader();
             reader.onload = function(e) {
                 currentImageData = e.target.result;
-                const img = new Image();
+                var img = new Image();
                 img.onload = function() {
                     document.getElementById('previewImage').src = currentImageData;
                     document.getElementById('fileName').textContent = file.name;
@@ -280,61 +298,68 @@
         }
 
         async function startUpload() {
-            if (!GITHUB_TOKEN) { showToast('Configure seu GitHub Token primeiro!', 'error'); return; }
+            if (!GITHUB_TOKEN) {
+                showToast('Configure seu GitHub Token primeiro!', 'error');
+                return;
+            }
 
             document.getElementById('previewSection').classList.remove('active');
             document.getElementById('uploadProgress').classList.add('active');
-            const btn = document.getElementById('uploadBtn');
+            var btn = document.getElementById('uploadBtn');
             btn.disabled = true;
 
             try {
-                const timestamp = Date.now();
-                const randomId = Math.random().toString(36).substring(2, 8);
-                const safeName = currentFile.name.replace(/[^a-zA-Z0-9.]/g, '-');
-                const fileName = `img_${timestamp}_${randomId}_${safeName}`;
-                const path = `img/${fileName}`;
+                var timestamp = Date.now();
+                var randomId = Math.random().toString(36).substring(2, 8);
+                var safeName = currentFile.name.replace(/[^a-zA-Z0-9.]/g, '-');
+                var fileName = 'img_' + timestamp + '_' + randomId + '_' + safeName;
+                var path = 'img/' + fileName;
 
                 updateProgress(10, 'Verificando repositorio...');
-                let sha = undefined;
+                var sha = undefined;
                 try {
-                    const checkRes = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                    var checkRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
                         method: 'GET',
-                        headers: { 'Accept': 'application/vnd.github+json', 'Authorization': `Bearer ${GITHUB_TOKEN}` }
+                        headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + GITHUB_TOKEN }
                     });
                     if (checkRes.ok) {
-                        const existing = await checkRes.json();
+                        var existing = await checkRes.json();
                         sha = existing.sha;
                     }
                 } catch(e) {}
 
                 updateProgress(40, 'Enviando para GitHub...');
-                const base64Data = currentImageData.split(',')[1];
+                var base64Data = currentImageData.split(',')[1];
 
-                const uploadRes = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                var uploadRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
                     method: 'PUT',
                     headers: {
                         'Accept': 'application/vnd.github+json',
-                        'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                        'Authorization': 'Bearer ' + GITHUB_TOKEN,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        message: `Add image: ${currentFile.name}`,
+                        message: 'Add image: ' + currentFile.name,
                         content: base64Data,
                         sha: sha
                     })
                 });
 
                 if (!uploadRes.ok) {
-                    const error = await uploadRes.json();
+                    var error = await uploadRes.json();
                     throw new Error(error.message || 'Erro no upload');
                 }
 
                 updateProgress(80, 'Processando...');
-                currentPublicUrl = `https://${GITHUB_OWNER}.github.io/Imagem-URL/${path}`;
+                currentPublicUrl = 'https://' + GITHUB_OWNER + '.github.io/Imagem-URL/' + path;
 
-                const historyItem = {
-                    id: randomId, name: currentFile.name, size: currentFile.size,
-                    url: currentPublicUrl, data: currentImageData, date: new Date().toISOString(),
+                var historyItem = {
+                    id: randomId,
+                    name: currentFile.name,
+                    size: currentFile.size,
+                    url: currentPublicUrl,
+                    data: currentImageData,
+                    date: new Date().toISOString(),
                     path: path
                 };
                 uploadHistory.unshift(historyItem);
@@ -342,12 +367,13 @@
                 localStorage.setItem('imageHostHistory', JSON.stringify(uploadHistory));
 
                 updateProgress(100, 'Concluido!');
-                setTimeout(() => {
+                setTimeout(function() {
                     document.getElementById('uploadProgress').classList.remove('active');
                     document.getElementById('resultSection').classList.add('active');
                     document.getElementById('publicLink').value = currentPublicUrl;
-                    document.getElementById('htmlLink').value = `<img src="${currentPublicUrl}" alt="${currentFile.name}" />`;
-                    updateHistoryDisplay(); updateStats();
+                    document.getElementById('htmlLink').value = '<img src="' + currentPublicUrl + '" alt="' + currentFile.name + '" />';
+                    updateHistoryDisplay();
+                    updateStats();
                     showToast('Upload concluido! Aguarde 1-2 min para o GitHub Pages atualizar.', 'success');
                 }, 500);
 
@@ -369,14 +395,15 @@
 
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            var k = 1024;
+            var sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            var i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
         function clearSelection() {
-            currentFile = null; currentImageData = null;
+            currentFile = null;
+            currentImageData = null;
             document.getElementById('fileInput').value = '';
             document.getElementById('previewSection').classList.remove('active');
             document.getElementById('uploadProgress').classList.remove('active');
@@ -386,53 +413,78 @@
         }
 
         function copyLink() {
-            const input = document.getElementById('publicLink');
-            input.select(); document.execCommand('copy');
-            const btn = document.getElementById('copyBtn');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-check"></i> Copiado!'; btn.classList.add('copied');
+            var input = document.getElementById('publicLink');
+            input.select();
+            document.execCommand('copy');
+            var btn = document.getElementById('copyBtn');
+            var originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+            btn.classList.add('copied');
             showToast('Link copiado!', 'success');
-            setTimeout(() => { btn.innerHTML = originalHTML; btn.classList.remove('copied'); }, 2000);
+            setTimeout(function() {
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('copied');
+            }, 2000);
         }
 
         function copyHtml() {
-            const input = document.getElementById('htmlLink');
-            input.select(); document.execCommand('copy');
-            const btn = document.getElementById('copyHtmlBtn');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-check"></i> Copiado!'; btn.classList.add('copied');
+            var input = document.getElementById('htmlLink');
+            input.select();
+            document.execCommand('copy');
+            var btn = document.getElementById('copyHtmlBtn');
+            var originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+            btn.classList.add('copied');
             showToast('HTML copiado!', 'success');
-            setTimeout(() => { btn.innerHTML = originalHTML; btn.classList.remove('copied'); }, 2000);
+            setTimeout(function() {
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('copied');
+            }, 2000);
         }
 
-        function openLink() { window.open(currentPublicUrl, '_blank'); }
-        function shareTwitter() { window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent('Confira: ') + '&url=' + encodeURIComponent(currentPublicUrl), '_blank'); }
-        function shareFacebook() { window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(currentPublicUrl), '_blank'); }
-        function shareWhatsApp() { window.open('https://wa.me/?text=' + encodeURIComponent(currentPublicUrl), '_blank'); }
-        function shareEmail() { window.location.href = 'mailto:?subject=Imagem&body=' + encodeURIComponent(currentPublicUrl); }
+        function openLink() {
+            window.open(currentPublicUrl, '_blank');
+        }
+
+        function shareTwitter() {
+            window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent('Confira: ') + '&url=' + encodeURIComponent(currentPublicUrl), '_blank');
+        }
+
+        function shareFacebook() {
+            window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(currentPublicUrl), '_blank');
+        }
+
+        function shareWhatsApp() {
+            window.open('https://wa.me/?text=' + encodeURIComponent(currentPublicUrl), '_blank');
+        }
+
+        function shareEmail() {
+            window.location.href = 'mailto:?subject=Imagem&body=' + encodeURIComponent(currentPublicUrl);
+        }
 
         function updateHistoryDisplay() {
-            const grid = document.getElementById('historyGrid');
+            var grid = document.getElementById('historyGrid');
             if (uploadHistory.length === 0) {
                 grid.innerHTML = '<div class="empty-history" style="grid-column: 1 / -1;"><i class="fas fa-images"></i><p>Nenhuma imagem enviada ainda</p></div>';
                 return;
             }
-            grid.innerHTML = uploadHistory.map(item => 
-                '<div class="history-item" onclick="loadFromHistory('' + item.id + '')">' +
-                '<img src="' + item.data + '" class="history-item-image" alt="' + item.name + '">' +
-                '<div class="history-item-info"><h4>' + item.name + '</h4><p>' + formatFileSize(item.size) + ' &bull; ' + new Date(item.date).toLocaleDateString('pt-BR') + '</p></div>' +
-                '<div class="history-item-actions" onclick="event.stopPropagation()">' +
-                '<button onclick="copyHistoryLink('' + item.url + '')"><i class="fas fa-copy"></i> Link</button>' +
-                '<button onclick="deleteHistoryItem('' + item.id + '')"><i class="fas fa-trash"></i></button>' +
-                '</div></div>'
-            ).join('');
+            grid.innerHTML = uploadHistory.map(function(item) {
+                return '<div class="history-item" onclick="loadFromHistory('' + item.id + '')">' +
+                    '<img src="' + item.data + '" class="history-item-image" alt="' + item.name + '">' +
+                    '<div class="history-item-info"><h4>' + item.name + '</h4><p>' + formatFileSize(item.size) + ' &bull; ' + new Date(item.date).toLocaleDateString('pt-BR') + '</p></div>' +
+                    '<div class="history-item-actions" onclick="event.stopPropagation()">' +
+                    '<button onclick="copyHistoryLink('' + item.url + '')"><i class="fas fa-copy"></i> Link</button>' +
+                    '<button onclick="deleteHistoryItem('' + item.id + '')"><i class="fas fa-trash"></i></button>' +
+                    '</div></div>';
+            }).join('');
         }
 
         function loadFromHistory(id) {
-            const item = uploadHistory.find(h => h.id === id);
+            var item = uploadHistory.find(function(h) { return h.id === id; });
             if (!item) return;
             currentFile = { name: item.name, size: item.size };
-            currentImageData = item.data; currentPublicUrl = item.url;
+            currentImageData = item.data;
+            currentPublicUrl = item.url;
             document.getElementById('publicLink').value = currentPublicUrl;
             document.getElementById('htmlLink').value = '<img src="' + currentPublicUrl + '" alt="' + item.name + '" />';
             document.getElementById('resultSection').classList.add('active');
@@ -440,24 +492,54 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function copyHistoryLink(url) { navigator.clipboard.writeText(url).then(() => showToast('Link copiado!', 'success')); }
-        function deleteHistoryItem(id) { uploadHistory = uploadHistory.filter(h => h.id !== id); localStorage.setItem('imageHostHistory', JSON.stringify(uploadHistory)); updateHistoryDisplay(); updateStats(); showToast('Removido', 'success'); }
-        function clearHistory() { if (uploadHistory.length === 0) return; if (!confirm('Limpar todo o historico?')) return; uploadHistory = []; localStorage.removeItem('imageHostHistory'); updateHistoryDisplay(); updateStats(); showToast('Historico limpo', 'success'); }
-        function updateStats() { document.getElementById('totalUploads').textContent = uploadHistory.length; }
+        function copyHistoryLink(url) {
+            navigator.clipboard.writeText(url).then(function() {
+                showToast('Link copiado!', 'success');
+            });
+        }
+
+        function deleteHistoryItem(id) {
+            uploadHistory = uploadHistory.filter(function(h) { return h.id !== id; });
+            localStorage.setItem('imageHostHistory', JSON.stringify(uploadHistory));
+            updateHistoryDisplay();
+            updateStats();
+            showToast('Removido', 'success');
+        }
+
+        function clearHistory() {
+            if (uploadHistory.length === 0) return;
+            if (!confirm('Limpar todo o historico?')) return;
+            uploadHistory = [];
+            localStorage.removeItem('imageHostHistory');
+            updateHistoryDisplay();
+            updateStats();
+            showToast('Historico limpo', 'success');
+        }
+
+        function updateStats() {
+            document.getElementById('totalUploads').textContent = uploadHistory.length;
+        }
 
         function showToast(message, type) {
-            const toast = document.getElementById('toast');
+            var toast = document.getElementById('toast');
             toast.className = 'toast ' + type;
             toast.querySelector('.toast-message').textContent = message;
             toast.querySelector('.toast-icon i').className = type === 'success' ? 'fas fa-check' : 'fas fa-exclamation-triangle';
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+            setTimeout(function() {
+                toast.classList.remove('show');
+            }, 3000);
         }
 
         function showSection(section) {
-            if (section === 'upload') { window.scrollTo({ top: 0, behavior: 'smooth' }); clearSelection(); }
-            else if (section === 'history') document.getElementById('historySection').scrollIntoView({ behavior: 'smooth' });
-            else if (section === 'about') showToast('ImageHost v2.0 - Upload real para GitHub via API', 'success');
+            if (section === 'upload') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                clearSelection();
+            } else if (section === 'history') {
+                document.getElementById('historySection').scrollIntoView({ behavior: 'smooth' });
+            } else if (section === 'about') {
+                showToast('ImageHost v2.0 - Upload real para GitHub via API', 'success');
+            }
         }
     </script>
 </body>
