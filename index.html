@@ -308,7 +308,7 @@
                 var randomId = Math.random().toString(36).substring(2, 6);
                 var ext = currentFile.name.split('.').pop().toLowerCase();
                 var fileName = timestamp + '_' + randomId + '.' + ext;
-                var path = 'img/' + fileName;
+                var path = 'imagem/' + fileName;
 
                 updateProgress(10, 'Verificando...');
                 var sha = undefined;
@@ -346,7 +346,7 @@
                 }
 
                 updateProgress(80, 'Processando...');
-                currentPublicUrl = 'https://' + GITHUB_OWNER + '.github.io/Imagem-URL/' + path;
+                currentPublicUrl = 'https://' + GITHUB_OWNER + '.github.io/Imagem-URL/imagem/' + fileName;
 
                 var historyItem = {
                     id: randomId, name: currentFile.name, size: currentFile.size,
