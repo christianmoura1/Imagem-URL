@@ -78,7 +78,7 @@
     <div class="container">
         <div class="hero">
             <h1>Hospede suas imagens</h1>
-            <p>Upload real para GitHub. Links que funcionam imediatamente!</p>
+            <p>Upload real para GitHub. Links que funcionam!</p>
         </div>
 
         <div class="config-section">
@@ -134,8 +134,8 @@
             <h3 style="text-align: center;">Upload Concluido!</h3>
 
             <div class="warning-box">
-                <i class="fas fa-clock"></i> <strong>Link Principal (GitHub Raw):</strong> Funciona imediatamente!<br>
-                <i class="fas fa-hourglass-half"></i> <strong>Link GitHub Pages:</strong> Pode levar 1-5 minutos para ativar.
+                <i class="fas fa-clock"></i> <strong>Link Principal:</strong> Funciona imediatamente!<br>
+                <i class="fas fa-hourglass-half"></i> <strong>Link GitHub Pages:</strong> Pode levar 1-5 minutos.
             </div>
 
             <div class="link-label"><strong>Link Direto (Funciona Agora):</strong></div>
@@ -164,7 +164,7 @@
                 <button class="share-btn" id="facebookBtn" title="Facebook"><i class="fab fa-facebook-f"></i></button>
                 <button class="share-btn" id="whatsappBtn" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
                 <button class="share-btn" id="emailBtn" title="Email"><i class="fas fa-envelope"></i></button>
-                <button class="share-btn" id="openRawBtn" title="Abrir Link Direto"><i class="fas fa-external-link-alt"></i></button>
+                <button class="share-btn" id="openRawBtn" title="Abrir Link"><i class="fas fa-external-link-alt"></i></button>
             </div>
             <button class="btn btn-secondary" style="width: 100%; margin-top: 1rem; justify-content: center;" id="newUploadBtn">
                 <i class="fas fa-plus"></i> Nova Imagem
@@ -330,7 +330,8 @@
                 var fileName = timestamp + '_' + randomId + '.' + ext;
                 var path = 'imagem/' + fileName;
 
-                updateProgress(10, 'Verificando...');
+                // Verificar arquivo existente
+                updateProgress(5, 'Verificando...');
                 var sha = undefined;
                 try {
                     var checkRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
@@ -343,7 +344,8 @@
                     }
                 } catch(e) {}
 
-                updateProgress(40, 'Enviando...');
+                // Upload para GitHub
+                updateProgress(10, 'Enviando...');
                 var base64Data = currentImageData.split(',')[1];
 
                 var uploadRes = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
@@ -365,14 +367,11 @@
                     throw new Error(error.message || 'Erro no upload');
                 }
 
-                updateProgress(80, 'Gerando links...');
-
-                // Link GitHub Raw - funciona IMEDIATAMENTE
+                // Gerar URLs
                 currentRawUrl = 'https://raw.githubusercontent.com/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/main/' + path;
-
-                // Link GitHub Pages - pode demorar
                 currentPublicUrl = 'https://' + GITHUB_OWNER + '.github.io/Imagem-URL/imagem/' + fileName;
 
+                // Salvar no historico
                 var historyItem = {
                     id: randomId, name: currentFile.name, size: currentFile.size,
                     rawUrl: currentRawUrl, publicUrl: currentPublicUrl, 
@@ -382,24 +381,37 @@
                 if (uploadHistory.length > 20) uploadHistory.pop();
                 localStorage.setItem('imageHostHistory', JSON.stringify(uploadHistory));
 
-                updateProgress(100, 'Upload completo!');
+                // ===== DELAY DE 20s NA BARRA DE PROGRESSO =====
+                // A barra vai de 10% ate 100% em 20 segundos
+                var startPercent = 10;
+                var endPercent = 100;
+                var duration = 20000; // 20 segundos
+                var startTime = Date.now();
 
-                // Aguardar 20s para GitHub Pages propagar
-                var secondsLeft = 20;
-                var countdownInterval = setInterval(function() {
-                    secondsLeft--;
-                    updateProgress(100, 'Aguardando propagacao... ' + secondsLeft + 's');
-                    if (secondsLeft <= 0) {
-                        clearInterval(countdownInterval);
-                        el.uploadProgress.classList.remove('active');
-                        el.resultSection.classList.add('active');
-                        el.rawLink.value = currentRawUrl;
-                        el.publicLink.value = currentPublicUrl;
-                        el.htmlLink.value = '<img src="' + currentPublicUrl + '" alt="' + currentFile.name + '" />';
-                        updateHistoryDisplay();
-                        showToast('Upload concluido! Link pronto!', 'success');
+                var progressInterval = setInterval(function() {
+                    var elapsed = Date.now() - startTime;
+                    var progress = startPercent + ((elapsed / duration) * (endPercent - startPercent));
+                    var secondsLeft = Math.ceil((duration - elapsed) / 1000);
+
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(progressInterval);
+                        updateProgress(100, 'Concluido!');
+
+                        // Mostrar resultado
+                        setTimeout(function() {
+                            el.uploadProgress.classList.remove('active');
+                            el.resultSection.classList.add('active');
+                            el.rawLink.value = currentRawUrl;
+                            el.publicLink.value = currentPublicUrl;
+                            el.htmlLink.value = '<img src="' + currentPublicUrl + '" alt="' + currentFile.name + '" />';
+                            updateHistoryDisplay();
+                            showToast('Upload concluido! Link pronto!', 'success');
+                        }, 500);
+                    } else {
+                        updateProgress(progress, 'Propagando... ' + secondsLeft + 's restantes');
                     }
-                }, 1000);
+                }, 100); // Atualiza a cada 100ms para suavidade
 
             } catch (error) {
                 el.uploadProgress.classList.remove('active');
@@ -413,7 +425,7 @@
 
         function updateProgress(percent, text) {
             el.progressBar.style.width = percent + '%';
-            el.progressPercent.textContent = percent + '%';
+            el.progressPercent.textContent = Math.floor(percent) + '%';
             el.progressText.textContent = text;
         }
 
