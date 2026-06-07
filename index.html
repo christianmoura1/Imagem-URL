@@ -628,7 +628,7 @@
             </label>
             <textarea id="productDescription" rows="3"
                 placeholder="Ex: Creme capilar marca X · R$49,90 · Define cachos e elimina frizz em 5min · Público: mulheres 20-35 anos"
-                style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.7rem;color:var(--text);font-size:0.85rem;resize:vertical;font-family:inherit;box-sizing:border-box;"></textarea>
+                style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:0.7rem;color:var(--text);font-size:0.85rem;resize:vertical;font-family:inherit;box-sizing:border-box;"></textarea>
         </div>
 
         <!-- Imagem de referência -->
@@ -636,7 +636,7 @@
             <label style="font-size:0.8rem;color:var(--muted);font-weight:600;display:block;margin-bottom:0.4rem;">
                 <i class="fas fa-camera"></i> Foto de referência de estilo <span style="opacity:0.6">(opcional)</span>
             </label>
-            <div id="refDropZone" style="border:2px dashed var(--border);border-radius:10px;padding:1rem;text-align:center;cursor:pointer;transition:border-color 0.2s;background:var(--surface);">
+            <div id="refDropZone" style="border:2px dashed var(--border);border-radius:10px;padding:1rem;text-align:center;cursor:pointer;transition:border-color 0.2s;background:var(--bg3);">
                 <div id="refPreviewWrap" style="display:none;flex-direction:column;align-items:center;gap:0.4rem;">
                     <img id="refPreview" style="max-height:120px;border-radius:8px;" />
                     <div style="font-size:0.75rem;color:var(--muted);" id="refFileName"></div>
@@ -824,27 +824,36 @@
 
     // ─── GROQ PROMPT RULES ────────────────────────────────────────────────────
     var GROQ_SYSTEM_PROMPT = [
-        'Voce e um especialista em criar videos de TikTok Shop que parecem gravados no celular de uma pessoa REAL.',
-        'Nada de perfeicao. Nada de iluminacao de estudio.',
-        'O objetivo e que o espectador ache que e video de amiga mandando no WhatsApp.',
+        'Voce e o melhor roteirista de UGC (User Generated Content) para TikTok Shop do Brasil.',
+        'Sua especialidade: criar prompts de video que enganam o algoritmo e o espectador — parecem gravados no celular de uma amiga, nunca de uma empresa.',
         '',
-        'Analise a imagem de produto e entregue UM PROMPT UNICO PARA SORA 2 (<=1000 caracteres):',
-        '"Sora2, 10s, 9:16, 1080p, Image-to-Video.',
-        '[Descricao visual ANTI-PERFEICAO: modelo com defeitos reais, ambiente baguncado, iluminacao ruim, camera tremendo, foco desregulado, ruido digital, grao de celular barato]',
-        'fala rapida e imperfeita: [ROTEIRO DE VOZ EM PORTUGUES, maximo 10s, com hesitacoes, gaguejos leves, respiracoes, risadas nervosas, tom de audio de WhatsApp, sem enrolacao, hook imediato, problema, preco, prova social, garantia, CTA urgente].',
-        '[Acoes visuais desajeitadas: dedo na lente, tosse, ajusta cabelo, olha pra baixo, ri sozinha].',
-        '[Estilo de filmagem ANTI-IA: celular antigo, lente suja, notificacao piscando, bateria fraca, audio estourado, ventilador barulhento ao fundo].',
-        'Zero texto na tela, zero producao, 100% real, 0% IA."',
+        '== INPUTS QUE VOCE VAI RECEBER ==',
+        '1. FOTO DO PRODUTO (obrigatoria): analise cores, embalagem, categoria, textura.',
+        '2. DESCRICAO DO PRODUTO (opcional): nome, preco, beneficio principal, publico-alvo.',
+        '3. FOTO DE REFERENCIA DE ESTILO (opcional): identifique enquadramento, iluminacao, ambiente, tipo de criadora e replique ESSE estilo no prompt.',
         '',
-        'Inclua no minimo 3 elementos ANTI-IA:',
-        '- Iluminacao: amarelada, sombra dura, claridade irregular',
-        '- Pele: poros visiveis, olheira real, mancha de base mal passada',
-        '- Cabelo: oleoso na raiz, frizz, mecha solta',
-        '- Ambiente: tomada exposta, xicara suja, roupa amontoada',
-        '- Camera: tremedeira, foco que perde, zoom acidental',
-        '- Audio: estoura quando grita, eco de quarto vazio',
+        '== ESTRUTURA OBRIGATORIA DO PROMPT ==',
+        'Sora2, 10s, 9:16, 1080p, Image-to-Video.',
+        'CENA: [ambiente especifico baseado no produto — banheiro, quarto, cozinha, escritorio].',
+        'CRIADORA: [mulher brasileira com imperfeicoes reais — descreva olheira, textura de pele, cabelo sem filtro, sem maquiagem perfeita].',
+        'CAMERA: [celular antigo tremendo levemente, foco que perde ocasionalmente, grao digital, lente levemente suja].',
+        'VOZ: [portugues BR, fala rapida com hesitacoes naturais, respiracoes, gancho imediato nos primeiros 2s, problema + solucao + preco + prova social + CTA urgente em 10s].',
+        'ACOES: [sequencia especifica de como ela segura, abre, aplica o produto e reage].',
+        'ANTI-IA: [3 detalhes de imperfeicao ESPECIFICOS para este produto e ambiente].',
         '',
-        'Retorne APENAS o prompt, sem explicacoes adicionais. Maximo 1000 caracteres. Em portugues do Brasil.'
+        '== ANTI-IA POR CATEGORIA (escolha 3 especificos) ==',
+        'Capilar: espelho embaçado, cabelo molhado pingando, toalha no ombro, secador ao fundo.',
+        'Skincare/maquiagem: luz do banheiro amarelada, base mal espalhada, acne real visivel.',
+        'Moda/roupa: quarto bagunçado, araras ao fundo, espelho riscado, tag da roupa aparecendo.',
+        'Suplemento/comida: cozinha com louça na pia, luz natural da janela, colher pingando.',
+        'Geral: notificacao piscando na tela, bateria abaixo de 15%, audio que estoura no grito, eco de quarto.',
+        '',
+        '== REGRAS ABSOLUTAS ==',
+        '- Se receber foto de referencia, priorize o estilo visual dela acima de qualquer outro padrao.',
+        '- Se receber descricao do produto, use o nome, preco e beneficio exatos na voz.',
+        '- Maximo 1000 caracteres no prompt final.',
+        '- Retorne APENAS o prompt, sem explicacoes, sem titulos, sem aspas externas.',
+        '- Em portugues do Brasil.'
     ].join('\n');
 
     // ─── STATE ────────────────────────────────────────────────────────────────
@@ -1147,7 +1156,7 @@
             var img = $('refPreview');
             img.src = e.target.result;
             $('refFileName').textContent = file.name;
-            $('refPreviewWrap').style.display = 'block';
+            $('refPreviewWrap').style.display = 'flex';
             $('refPlaceholder').style.display = 'none';
             $('refDropZone').style.borderColor = 'var(--primary)';
             showToast('Referência carregada!', 'success');
