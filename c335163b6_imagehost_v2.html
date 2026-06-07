@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoGen Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #080812;
+            --bg2: #0f0f1e;
+            --bg3: #16162a;
+            --border: #ffffff12;
+            --border-active: #7c3aed;
+            --text: #f0f0ff;
+            --muted: #8888aa;
+            --primary: #7c3aed;
+            --primary-light: #a78bfa;
+            --primary-glow: rgba(124, 58, 237, 0.3);
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --step-done: #10b981;
+            --step-active: #7c3aed;
+            --step-idle: #2a2a40;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background */
+        .bg-orbs {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+        }
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.12;
+            animation: orbFloat 20s ease-in-out infinite;
+        }
+        .orb1 { width: 500px; height: 500px; background: #7c3aed; top: -100px; left: -100px; animation-delay: 0s; }
+        .orb2 { width: 400px; height: 400px; background: #ec4899; bottom: -80px; right: -80px; animation-delay: -7s; }
+        .orb3 { width: 300px; height: 300px; background: #3b82f6; top: 50%; left: 50%; transform: translate(-50%,-50%); animation-delay: -14s; }
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.05); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+
+        /* Header */
+        header {
+            position: sticky; top: 0; z-index: 100;
+            padding: 1rem 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(8, 8, 18, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+        .logo {
+            display: flex; align-items: center; gap: 0.6rem;
+            font-size: 1.25rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-light), #ec4899);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .logo-icon { font-size: 1.4rem; -webkit-text-fill-color: var(--primary-light); }
+        .header-right { display: flex; gap: 0.75rem; align-items: center; }
+        .icon-btn {
+            width: 38px; height: 38px; border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg3); color: var(--muted);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.25s; font-size: 0.95rem;
+        }
+        .icon-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Main */
+        .main {
+            position: relative; z-index: 1;
+            max-width: 860px; margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+
+        /* Page title */
+        .page-title {
+            text-align: center; margin-bottom: 3rem;
+        }
+        .page-title h1 {
+            font-size: 2.2rem; font-weight: 800; line-height: 1.2;
+            background: linear-gradient(135deg, #fff 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .page-title p { color: var(--muted); font-size: 0.95rem; }
+
+        /* Steps indicator */
+        .steps-indicator {
+            display: flex; align-items: center; justify-content: center;
+            gap: 0; margin-bottom: 2.5rem;
+        }
+        .step-dot {
+            display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+            position: relative;
+        }
+        .step-circle {
+            width: 44px; height: 44px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.9rem;
+            transition: all 0.4s;
+            border: 2px solid var(--step-idle);
+            background: var(--bg3);
+            color: var(--muted);
+        }
+        .step-circle.done {
+            background: var(--step-done);
+            border-color: var(--step-done);
+            color: white;
+        }
+        .step-circle.active {
+            background: var(--step-active);
+            border-color: var(--step-active);
+            color: white;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+        .step-label {
+            font-size: 0.72rem; font-weight: 500; color: var(--muted);
+            white-space: nowrap; transition: color 0.3s;
+        }
+        .step-dot.active .step-label { color: var(--primary-light); }
+        .step-dot.done .step-label { color: var(--step-done); }
+        .step-line {
+            width: 80px; height: 2px;
+            background: var(--step-idle);
+            margin-bottom: 1.4rem;
+            transition: background 0.4s;
+        }
+        .step-line.done { background: var(--step-done); }
+        .step-line.active { background: var(--primary); }
+
+        /* Cards */
+        .card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s;
+        }
+        .card.step-card {
+            position: relative;
+            overflow: hidden;
+        }
+        .card.step-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0;
+            width: 4px; height: 100%;
+            background: var(--step-idle);
+            border-radius: 4px 0 0 4px;
+            transition: background 0.4s;
+        }
+        .card.step-card.active::before { background: var(--primary); }
+        .card.step-card.done::before { background: var(--step-done); }
+        .card.step-card.locked {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+        .card-header {
+            display: flex; align-items: center; gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .card-step-num {
+            width: 36px; height: 36px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.9rem;
+            background: var(--bg3); color: var(--muted);
+            border: 1px solid var(--border);
+            transition: all 0.3s; flex-shrink: 0;
+        }
+        .active .card-step-num { background: var(--primary); color: white; border-color: var(--primary); }
+        .done .card-step-num { background: var(--step-done); color: white; border-color: var(--step-done); }
+        .card-title { font-size: 1.05rem; font-weight: 700; }
+        .card-subtitle { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+
+        /* Upload Zone */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 14px;
+            padding: 2.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--bg3);
+            position: relative;
+            overflow: hidden;
+        }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--primary);
+            background: rgba(124, 58, 237, 0.07);
+        }
+        .upload-zone input[type="file"] { display: none; }
+        .upload-icon-big {
+            font-size: 2.8rem; color: var(--primary-light);
+            margin-bottom: 1rem;
+            animation: pulse 3s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+        .upload-zone h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+        .upload-zone p { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.25rem; }
+
+        /* Preview image */
+        .image-preview-wrap {
+            display: none;
+            position: relative;
+            background: var(--bg3);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .image-preview-wrap.show { display: block; }
+        .preview-img {
+            width: 100%; max-height: 260px;
+            object-fit: cover; display: block;
+        }
+        .preview-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(8,8,18,0.9) 0%, transparent 60%);
+            display: flex; align-items: flex-end; padding: 1rem;
+        }
+        .preview-meta { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .meta-chip {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.75rem; color: white;
+            display: flex; align-items: center; gap: 0.4rem;
+        }
+        .preview-change-btn {
+            position: absolute; top: 0.75rem; right: 0.75rem;
+            padding: 0.4rem 0.8rem; border-radius: 8px;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: white; font-size: 0.75rem; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .preview-change-btn:hover { background: var(--primary); }
+
+        /* URL result */
+        .url-result {
+            display: none;
+            margin-top: 1rem;
+            background: var(--bg3);
+            border: 1px solid var(--step-done);
+            border-radius: 12px;
+            padding: 0.9rem 1rem;
+        }
+        .url-result.show { display: block; }
+        .url-result-label {
+            font-size: 0.72rem; color: var(--step-done); font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+            display: flex; align-items: center; gap: 0.4rem;
+        }
+        .url-row {
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .url-row input {
+            flex: 1; background: transparent; border: none;
+            color: var(--text); font-size: 0.82rem; font-family: monospace;
+            outline: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .copy-btn {
+            padding: 0.35rem 0.75rem; border-radius: 7px;
+            border: 1px solid var(--border); background: var(--bg2);
+            color: var(--muted); font-size: 0.75rem; cursor: pointer;
+            transition: all 0.2s; white-space: nowrap;
+        }
+        .copy-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Prompt area */
+        .prompt-box {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.25rem;
+            min-height: 140px;
+            font-size: 0.85rem;
+            color: var(--text);
+            line-height: 1.7;
+            font-family: 'Inter', sans-serif;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .prompt-box.empty { color: var(--muted); font-style: italic; }
+        .prompt-box.loading {
+            display: flex; align-items: center; justify-content: center;
+            gap: 0.75rem; color: var(--primary-light); font-style: normal;
+        }
+
+        /* Video result */
+        .video-result-wrap {
+            display: none;
+            margin-top: 1.25rem;
+        }
+        .video-result-wrap.show { display: block; }
+        video {
+            width: 100%; border-radius: 12px;
+            background: #000; border: 1px solid var(--border);
+        }
+
+        /* Progress */
+        .progress-wrap {
+            display: none; margin-top: 1rem;
+        }
+        .progress-wrap.show { display: block; }
+        .progress-bar-bg {
+            background: var(--bg3); border-radius: 99px; height: 6px;
+            overflow: hidden; margin-bottom: 0.5rem;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            border-radius: 99px;
+            width: 0%; transition: width 0.4s;
+        }
+        .progress-bar-fill.indeterminate {
+            width: 40%;
+            animation: indeterminate 1.4s ease-in-out infinite;
+        }
+        @keyframes indeterminate {
+            0% { margin-left: -40%; }
+            100% { margin-left: 110%; }
+        }
+        .progress-text {
+            font-size: 0.78rem; color: var(--muted);
+            display: flex; justify-content: space-between;
+        }
+
+        /* Status badge */
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.3rem 0.75rem; border-radius: 20px;
+            font-size: 0.75rem; font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .status-badge.processing { background: rgba(124,58,237,0.15); color: var(--primary-light); border: 1px solid rgba(124,58,237,0.3); }
+        .status-badge.done { background: rgba(16,185,129,0.15); color: var(--step-done); border: 1px solid rgba(16,185,129,0.3); }
+        .status-badge.error { background: rgba(239,68,68,0.15); color: var(--error); border: 1px solid rgba(239,68,68,0.3); }
+        .status-dot { width: 7px; height: 7px; border-radius: 50%; }
+        .processing .status-dot { background: var(--primary-light); animation: blink 1s ease-in-out infinite; }
+        .done .status-dot { background: var(--step-done); }
+        .error .status-dot { background: var(--error); }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.8rem 1.6rem; border-radius: 12px;
+            font-weight: 600; font-size: 0.88rem;
+            cursor: pointer; border: none; transition: all 0.25s;
+            text-decoration: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #6d28d9);
+            color: white;
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--primary-glow);
+        }
+        .btn-secondary {
+            background: var(--bg3); color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover:not(:disabled) { border-color: var(--primary); color: var(--primary-light); }
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+        }
+        .btn-success:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16,185,129,0.3); }
+        .btn-block { width: 100%; justify-content: center; }
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+        .btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; border-radius: 9px; }
+
+        .btn-row { display: flex; gap: 0.75rem; margin-top: 1.25rem; flex-wrap: wrap; }
+
+        /* Model selector */
+        .model-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 0.6rem; margin-bottom: 1.25rem;
+        }
+        .model-card {
+            background: var(--bg3); border: 1.5px solid var(--border);
+            border-radius: 10px; padding: 0.65rem 0.75rem;
+            cursor: pointer; transition: all 0.2s;
+            display: flex; flex-direction: column; gap: 0.2rem;
+        }
+        .model-card:hover { border-color: var(--primary); }
+        .model-card.selected { border-color: var(--primary); background: rgba(124,58,237,0.12); }
+        .model-name { font-size: 0.82rem; font-weight: 600; }
+        .model-tag { font-size: 0.68rem; color: var(--muted); }
+
+        /* Duration slider */
+        .slider-wrap { margin-bottom: 1.25rem; }
+        .slider-label { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.5rem; display: flex; justify-content: space-between; }
+        .slider-label span { color: var(--primary-light); font-weight: 600; }
+        input[type="range"] {
+            width: 100%; -webkit-appearance: none;
+            height: 5px; border-radius: 99px;
+            background: var(--bg3); outline: none;
+            accent-color: var(--primary);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.75); z-index: 1000;
+            backdrop-filter: blur(8px);
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem; width: 90%; max-width: 480px;
+            max-height: 88vh; overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+        .modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 1.75rem;
+        }
+        .modal-header h3 { font-size: 1.1rem; font-weight: 700; }
+        .modal-close {
+            width: 32px; height: 32px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg3);
+            color: var(--muted); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .modal-close:hover { background: var(--error); color: white; border-color: var(--error); }
+
+        /* Form fields */
+        .field { margin-bottom: 1.25rem; }
+        .field label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.4rem; font-weight: 500; }
+        .field input, .field select {
+            width: 100%; background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 10px; padding: 0.7rem 1rem;
+            color: var(--text); font-size: 0.88rem;
+            outline: none; transition: border-color 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .field input:focus, .field select:focus { border-color: var(--primary); }
+        .field-row { display: flex; gap: 0.5rem; align-items: flex-end; }
+        .field-row .field { flex: 1; margin-bottom: 0; }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 1.5rem; right: 1.5rem;
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 12px; padding: 0.85rem 1.25rem;
+            display: flex; align-items: center; gap: 0.6rem;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+            transform: translateY(120px); opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 9999; min-width: 220px; max-width: 340px;
+            font-size: 0.85rem; font-weight: 500;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--error); }
+        .toast.warning { border-color: var(--warning); }
+        .toast-icon { font-size: 1rem; }
+        .toast.success .toast-icon { color: var(--success); }
+        .toast.error .toast-icon { color: var(--error); }
+        .toast.warning .toast-icon { color: var(--warning); }
+
+        /* Divider */
+        .divider { height: 1px; background: var(--border); margin: 1.25rem 0; }
+
+        /* Reset button */
+        .reset-btn {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem 1rem; border-radius: 8px;
+            border: 1px solid var(--border); background: transparent;
+            color: var(--muted); font-size: 0.78rem; cursor: pointer;
+            transition: all 0.2s; margin-left: auto;
+        }
+        .reset-btn:hover { border-color: var(--error); color: var(--error); }
+
+        @media (max-width: 600px) {
+            .main { padding: 1.5rem 1rem 3rem; }
+            .page-title h1 { font-size: 1.6rem; }
+            .step-line { width: 40px; }
+            .model-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-orbs">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+</div>
+
+<header>
+    <div class="logo">
+        <i class="fas fa-film logo-icon"></i>
+        VideoGen Studio
+    </div>
+    <div class="header-right">
+        <button class="icon-btn" id="configBtn" title="Configurações">
+            <i class="fas fa-sliders-h"></i>
+        </button>
+    </div>
+</header>
+
+<div class="main">
+    <div class="page-title">
+        <h1>Crie vídeos com IA</h1>
+        <p>Da imagem ao vídeo em 3 passos simples</p>
+    </div>
+
+    <!-- Steps indicator -->
+    <div class="steps-indicator">
+        <div class="step-dot active" id="dot1">
+            <div class="step-circle active" id="circle1"><i class="fas fa-image"></i></div>
+            <div class="step-label">Imagem</div>
+        </div>
+        <div class="step-line" id="line1"></div>
+        <div class="step-dot" id="dot2">
+            <div class="step-circle" id="circle2"><i class="fas fa-robot"></i></div>
+            <div class="step-label">Prompt IA</div>
+        </div>
+        <div class="step-line" id="line2"></div>
+        <div class="step-dot" id="dot3">
+            <div class="step-circle" id="circle3"><i class="fas fa-film"></i></div>
+            <div class="step-label">Vídeo</div>
+        </div>
+    </div>
+
+    <!-- STEP 1: Upload Imagem -->
+    <div class="card step-card active" id="step1Card">
+        <div class="card-header">
+            <div class="card-step-num">1</div>
+            <div>
+                <div class="card-title">Envie sua imagem</div>
+                <div class="card-subtitle">A imagem será hospedada no GitHub e usada como base do vídeo</div>
+            </div>
+            <button class="reset-btn" id="resetStep1Btn" style="display:none;">
+                <i class="fas fa-redo"></i> Trocar
+            </button>
+        </div>
+
+        <!-- Upload zone -->
+        <div class="upload-zone" id="uploadZone">
+            <input type="file" id="fileInput" accept="image/*">
+            <div class="upload-icon-big"><i class="fas fa-cloud-upload-alt"></i></div>
+            <h3>Arraste a imagem aqui</h3>
+            <p>ou clique para selecionar do computador</p>
+            <button type="button" class="btn btn-primary btn-sm" id="chooseFileBtn">
+                <i class="fas fa-plus"></i> Escolher Imagem
+            </button>
+        </div>
+
+        <!-- Image preview -->
+        <div class="image-preview-wrap" id="previewWrap">
+            <img class="preview-img" id="previewImg" alt="Preview">
+            <div class="preview-overlay">
+                <div class="preview-meta">
+                    <div class="meta-chip"><i class="fas fa-file-image"></i> <span id="metaName">-</span></div>
+                    <div class="meta-chip"><i class="fas fa-weight-hanging"></i> <span id="metaSize">-</span></div>
+                    <div class="meta-chip"><i class="fas fa-expand"></i> <span id="metaDims">-</span></div>
+                </div>
+            </div>
+            <button class="preview-change-btn" id="changeImgBtn"><i class="fas fa-exchange-alt"></i> Trocar</button>
+        </div>
+
+        <!-- Progress upload -->
+        <div class="progress-wrap" id="uploadProgress">
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="uploadBar"></div></div>
+            <div class="progress-text"><span id="uploadText">Enviando...</span><span id="uploadPct">0%</span></div>
+        </div>
+
+        <!-- URL result -->
+        <div class="url-result" id="urlResult">
+            <div class="url-result-label"><i class="fas fa-check-circle"></i> Imagem hospedada com sucesso</div>
+            <div class="url-row">
+                <input type="text" id="imageUrlField" readonly>
+                <button class="copy-btn" id="copyUrlBtn"><i class="fas fa-copy"></i> Copiar</button>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary btn-block" id="uploadBtn" disabled>
+                <i class="fas fa-upload"></i> Enviar para GitHub
+            </button>
+        </div>
+    </div>
+
+    <!-- STEP 2: Gerar Prompt -->
+    <div class="card step-card locked" id="step2Card">
+        <div class="card-header">
+            <div class="card-step-num">2</div>
+            <div>
+                <div class="card-title">Gerar Prompt com IA</div>
+                <div class="card-subtitle">O Groq analisa a imagem e cria o prompt ideal para o vídeo</div>
+            </div>
+        </div>
+
+        <div class="prompt-box empty" id="promptBox">
+            O prompt gerado pela IA vai aparecer aqui...
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary btn-block" id="generatePromptBtn" disabled>
+                <i class="fas fa-robot"></i> Gerar Prompt com Groq AI
+            </button>
+            <button class="btn btn-secondary btn-sm" id="copyPromptBtn" style="display:none;">
+                <i class="fas fa-copy"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- STEP 3: Gerar Vídeo -->
+    <div class="card step-card locked" id="step3Card">
+        <div class="card-header">
+            <div class="card-step-num">3</div>
+            <div>
+                <div class="card-title">Gerar Vídeo</div>
+                <div class="card-subtitle">Escolha o modelo e gere o vídeo com a VideoGen API</div>
+            </div>
+        </div>
+
+        <!-- Model grid -->
+        <div style="font-size:0.8rem; color:var(--muted); margin-bottom:0.6rem; font-weight:500;">Modelo</div>
+        <div class="model-grid" id="modelGrid">
+            <div class="model-card selected" data-model="sora-2" data-max="10">
+                <div class="model-name">Sora 2</div>
+                <div class="model-tag">OpenAI · max 10s</div>
+            </div>
+            <div class="model-card" data-model="veo-31" data-max="8">
+                <div class="model-name">Veo 3.1</div>
+                <div class="model-tag">Google · max 8s</div>
+            </div>
+            <div class="model-card" data-model="kling-3" data-max="10">
+                <div class="model-name">Kling 3</div>
+                <div class="model-tag">Kuaishou · max 10s</div>
+            </div>
+            <div class="model-card" data-model="higgsfield_v1" data-max="15">
+                <div class="model-name">Higgsfield</div>
+                <div class="model-tag">Higgsfield · max 15s</div>
+            </div>
+            <div class="model-card" data-model="veo2" data-max="10">
+                <div class="model-name">Veo 2</div>
+                <div class="model-tag">Google · max 10s</div>
+            </div>
+            <div class="model-card" data-model="wan-25" data-max="10">
+                <div class="model-name">Wan 2.5</div>
+                <div class="model-tag">Alibaba · max 10s</div>
+            </div>
+        </div>
+
+        <!-- Duration -->
+        <div class="slider-wrap">
+            <div class="slider-label">Duração: <span id="durationLabel">10s</span></div>
+            <input type="range" id="durationSlider" min="4" max="10" value="10" step="1">
+        </div>
+
+        <!-- Video status -->
+        <div id="videoStatusWrap" style="display:none;">
+            <div class="status-badge processing" id="videoStatusBadge">
+                <div class="status-dot"></div>
+                <span id="videoStatusText">Processando...</span>
+            </div>
+        </div>
+
+        <!-- Progress video -->
+        <div class="progress-wrap" id="videoProgress">
+            <div class="progress-bar-bg"><div class="progress-bar-fill indeterminate" id="videoBar"></div></div>
+            <div class="progress-text"><span id="videoProgressText">Aguardando...</span><span></span></div>
+        </div>
+
+        <!-- Manual URL fallback -->
+        <div id="manualUrlWrap" style="display:none; margin-top:1rem;">
+            <div class="url-result show">
+                <div class="url-result-label"><i class="fas fa-link"></i> URL do Vídeo</div>
+                <div class="url-row">
+                    <input type="text" id="manualVideoUrl" placeholder="Cole a URL do vídeo aqui..." style="color:var(--text);">
+                    <button class="copy-btn" id="loadManualVideoBtn" style="background:var(--primary);color:white;border-color:var(--primary);">Carregar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video result -->
+        <div class="video-result-wrap" id="videoResultWrap">
+            <video id="generatedVideo" controls playsinline></video>
+            <div class="btn-row">
+                <a class="btn btn-success btn-sm" id="downloadVideoBtn" download="video.mp4">
+                    <i class="fas fa-download"></i> Baixar Vídeo
+                </a>
+                <button class="btn btn-secondary btn-sm" id="newVideoBtn">
+                    <i class="fas fa-redo"></i> Gerar Outro
+                </button>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary btn-block" id="generateVideoBtn" disabled>
+                <i class="fas fa-film"></i> Gerar Vídeo
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Config Modal -->
+<div class="modal-overlay" id="configModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3><i class="fas fa-sliders-h" style="color:var(--primary-light);margin-right:0.5rem;"></i>Configurações</h3>
+            <button class="modal-close" id="closeModal"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div class="field">
+            <label>GitHub Token <span style="color:var(--muted);font-size:0.72rem;">(repo scope)</span></label>
+            <div class="field-row">
+                <div class="field">
+                    <input type="password" id="githubTokenInput" placeholder="ghp_...">
+                </div>
+                <button class="btn btn-secondary btn-sm" id="testGithubBtn">Testar</button>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Groq API Key</label>
+            <div class="field-row">
+                <div class="field">
+                    <input type="password" id="groqTokenInput" placeholder="gsk_...">
+                </div>
+                <button class="btn btn-secondary btn-sm" id="testGroqBtn">Testar</button>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>VideoGen API Key</label>
+            <div class="field-row">
+                <div class="field">
+                    <input type="password" id="videogenTokenInput" placeholder="vg_...">
+                </div>
+                <button class="btn btn-secondary btn-sm" id="testVideogenBtn">Testar</button>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <button class="btn btn-primary btn-block" id="saveConfigBtn">
+            <i class="fas fa-save"></i> Salvar Configurações
+        </button>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+    <i class="toast-icon fas fa-check-circle"></i>
+    <span id="toastMsg">Mensagem</span>
+</div>
+
+<script>
+    // ─── CONFIG ────────────────────────────────────────────────────────────────
+    var GITHUB_TOKEN  = localStorage.getItem('gh_token')  || '';
+    var GROQ_TOKEN    = localStorage.getItem('groq_token') || '';
+    var VIDEOGEN_TOKEN = localStorage.getItem('vg_token')  || '';
+
+    var GITHUB_OWNER = 'christianmoura1';
+    var GITHUB_REPO  = 'Imagem-URL';
+    var GROQ_MODEL   = 'meta-llama/llama-4-scout-17b-16e-instruct';
+    var VIDEOGEN_URL = 'https://videogenapi.com/api/v1';
+
+    // ─── GROQ PROMPT RULES ────────────────────────────────────────────────────
+    var GROQ_SYSTEM_PROMPT = [
+        'Voce e um especialista em criar videos de TikTok Shop que parecem gravados no celular de uma pessoa REAL.',
+        'Nada de perfeicao. Nada de iluminacao de estudio.',
+        'O objetivo e que o espectador ache que e video de amiga mandando no WhatsApp.',
+        '',
+        'Analise a imagem de produto e entregue UM PROMPT UNICO PARA SORA 2 (<=1000 caracteres):',
+        '"Sora2, 10s, 9:16, 1080p, Image-to-Video.',
+        '[Descricao visual ANTI-PERFEICAO: modelo com defeitos reais, ambiente baguncado, iluminacao ruim, camera tremendo, foco desregulado, ruido digital, grao de celular barato]',
+        'fala rapida e imperfeita: [ROTEIRO DE VOZ EM PORTUGUES, maximo 10s, com hesitacoes, gaguejos leves, respiracoes, risadas nervosas, tom de audio de WhatsApp, sem enrolacao, hook imediato, problema, preco, prova social, garantia, CTA urgente].',
+        '[Acoes visuais desajeitadas: dedo na lente, tosse, ajusta cabelo, olha pra baixo, ri sozinha].',
+        '[Estilo de filmagem ANTI-IA: celular antigo, lente suja, notificacao piscando, bateria fraca, audio estourado, ventilador barulhento ao fundo].',
+        'Zero texto na tela, zero producao, 100% real, 0% IA."',
+        '',
+        'Inclua no minimo 3 elementos ANTI-IA:',
+        '- Iluminacao: amarelada, sombra dura, claridade irregular',
+        '- Pele: poros visiveis, olheira real, mancha de base mal passada',
+        '- Cabelo: oleoso na raiz, frizz, mecha solta',
+        '- Ambiente: tomada exposta, xicara suja, roupa amontoada',
+        '- Camera: tremedeira, foco que perde, zoom acidental',
+        '- Audio: estoura quando grita, eco de quarto vazio',
+        '',
+        'Retorne APENAS o prompt, sem explicacoes adicionais. Maximo 1000 caracteres. Em portugues do Brasil.'
+    ].join('\n');
+
+    // ─── STATE ────────────────────────────────────────────────────────────────
+    var state = {
+        currentStep: 1,
+        file: null,
+        imageData: null,
+        imageUrl: null,
+        prompt: null,
+        selectedModel: 'sora-2',
+        selectedModelMax: 10,
+        duration: 10
+    };
+
+    // ─── ELEMENTS ─────────────────────────────────────────────────────────────
+    var $ = function(id) { return document.getElementById(id); };
+
+    // ─── INIT ─────────────────────────────────────────────────────────────────
+    function init() {
+        // Populate config inputs
+        if ($('githubTokenInput')) $('githubTokenInput').value = GITHUB_TOKEN;
+        if ($('groqTokenInput'))   $('groqTokenInput').value   = GROQ_TOKEN;
+        if ($('videogenTokenInput')) $('videogenTokenInput').value = VIDEOGEN_TOKEN;
+
+        bindEvents();
+
+        // Show config modal on first load if no tokens
+        if (!GITHUB_TOKEN || !GROQ_TOKEN || !VIDEOGEN_TOKEN) {
+            setTimeout(function() {
+                $('configModal').classList.add('open');
+                if (!GITHUB_TOKEN && !GROQ_TOKEN && !VIDEOGEN_TOKEN) {
+                    showToast('Configure seus tokens para começar!', 'warning');
+                }
+            }, 600);
+        }
+    }
+
+    // ─── BIND EVENTS ──────────────────────────────────────────────────────────
+    function bindEvents() {
+        // Config modal
+        $('configBtn').addEventListener('click', function() { $('configModal').classList.add('open'); });
+        $('closeModal').addEventListener('click', function() { $('configModal').classList.remove('open'); });
+        $('configModal').addEventListener('click', function(e) {
+            if (e.target === $('configModal')) $('configModal').classList.remove('open');
+        });
+        $('saveConfigBtn').addEventListener('click', saveConfig);
+        $('testGithubBtn').addEventListener('click', testGithub);
+        $('testGroqBtn').addEventListener('click', testGroq);
+        $('testVideogenBtn').addEventListener('click', testVideogen);
+
+        // File input
+        $('fileInput').addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
+        });
+        $('chooseFileBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            $('fileInput').click();
+        });
+        $('uploadZone').addEventListener('click', function(e) {
+            if (e.target.closest('#chooseFileBtn')) return;
+            $('fileInput').click();
+        });
+        $('changeImgBtn').addEventListener('click', function() { $('fileInput').click(); });
+        $('resetStep1Btn').addEventListener('click', resetStep1);
+
+        // Drag and drop
+        ['dragenter','dragover','dragleave','drop'].forEach(function(ev) {
+            $('uploadZone').addEventListener(ev, function(e) { e.preventDefault(); e.stopPropagation(); });
+        });
+        ['dragenter','dragover'].forEach(function(ev) {
+            $('uploadZone').addEventListener(ev, function() { $('uploadZone').classList.add('dragover'); });
+        });
+        ['dragleave','drop'].forEach(function(ev) {
+            $('uploadZone').addEventListener(ev, function() { $('uploadZone').classList.remove('dragover'); });
+        });
+        $('uploadZone').addEventListener('drop', function(e) {
+            var file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) handleFile(file);
+        });
+
+        // Upload
+        $('uploadBtn').addEventListener('click', doUpload);
+        $('copyUrlBtn').addEventListener('click', function() { copyText($('imageUrlField').value, 'URL copiada!'); });
+
+        // Step 2
+        $('generatePromptBtn').addEventListener('click', doGeneratePrompt);
+        $('copyPromptBtn').addEventListener('click', function() { copyText(state.prompt, 'Prompt copiado!'); });
+
+        // Step 3
+        $('modelGrid').addEventListener('click', function(e) {
+            var card = e.target.closest('.model-card');
+            if (!card) return;
+            document.querySelectorAll('.model-card').forEach(function(c) { c.classList.remove('selected'); });
+            card.classList.add('selected');
+            state.selectedModel = card.dataset.model;
+            state.selectedModelMax = parseInt(card.dataset.max);
+            var max = state.selectedModelMax;
+            $('durationSlider').max = max;
+            if (parseInt($('durationSlider').value) > max) {
+                $('durationSlider').value = max;
+                state.duration = max;
+                $('durationLabel').textContent = max + 's';
+            }
+        });
+        $('durationSlider').addEventListener('input', function() {
+            state.duration = parseInt(this.value);
+            $('durationLabel').textContent = state.duration + 's';
+        });
+        $('generateVideoBtn').addEventListener('click', doGenerateVideo);
+        $('newVideoBtn').addEventListener('click', resetVideoResult);
+        $('loadManualVideoBtn').addEventListener('click', function() {
+            var url = $('manualVideoUrl').value.trim();
+            if (!url) { showToast('Cole a URL do vídeo!', 'error'); return; }
+            var video = $('generatedVideo');
+            video.src = url;
+            video.load();
+            $('downloadVideoBtn').href = url;
+            $('videoResultWrap').classList.add('show');
+            setStepState(3, 'done');
+            showToast('Vídeo carregado!', 'success');
+        });
+    }
+
+    // ─── FILE HANDLING ────────────────────────────────────────────────────────
+    function handleFile(file) {
+        if (!file.type.startsWith('image/')) {
+            showToast('Selecione apenas imagens!', 'error'); return;
+        }
+        state.file = file;
+
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            state.imageData = e.target.result;
+
+            // Show preview
+            $('uploadZone').style.display = 'none';
+            $('previewWrap').classList.add('show');
+            $('previewImg').src = e.target.result;
+            $('metaName').textContent = file.name.length > 20 ? file.name.substring(0,18) + '...' : file.name;
+            $('metaSize').textContent = formatSize(file.size);
+
+            // Get dimensions
+            var img = new Image();
+            img.onload = function() {
+                $('metaDims').textContent = img.width + 'x' + img.height;
+            };
+            img.src = e.target.result;
+
+            // Reset URL result
+            $('urlResult').classList.remove('show');
+            $('uploadBtn').disabled = false;
+            $('uploadBtn').innerHTML = '<i class="fas fa-upload"></i> Enviar para GitHub';
+            $('resetStep1Btn').style.display = 'flex';
+
+            // Lock steps 2 and 3 again if re-selecting image
+            if (state.currentStep > 1) resetToStep1();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function resetStep1() {
+        state.file = null; state.imageData = null; state.imageUrl = null;
+        $('uploadZone').style.display = '';
+        $('previewWrap').classList.remove('show');
+        $('urlResult').classList.remove('show');
+        $('uploadBtn').disabled = true;
+        $('resetStep1Btn').style.display = 'none';
+        $('fileInput').value = '';
+        resetToStep1();
+    }
+
+    function resetToStep1() {
+        state.prompt = null;
+        state.currentStep = 1;
+        setStepState(1, 'active');
+        setStepState(2, 'locked');
+        setStepState(3, 'locked');
+        $('generatePromptBtn').disabled = true;
+        $('generateVideoBtn').disabled = true;
+        $('promptBox').textContent = 'O prompt gerado pela IA vai aparecer aqui...';
+        $('promptBox').className = 'prompt-box empty';
+        $('copyPromptBtn').style.display = 'none';
+        resetVideoResult();
+    }
+
+    // ─── UPLOAD ───────────────────────────────────────────────────────────────
+    async function doUpload() {
+        if (!GITHUB_TOKEN) {
+            showToast('Configure o token GitHub!', 'error');
+            $('configModal').classList.add('open'); return;
+        }
+        if (!state.file || !state.imageData) {
+            showToast('Selecione uma imagem primeiro!', 'error'); return;
+        }
+
+        $('uploadBtn').disabled = true;
+        $('uploadBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        $('uploadProgress').classList.add('show');
+        setProgress('upload', 10, 'Verificando rate limit...');
+
+        try {
+            // Rate limit check
+            var rl = await fetch('https://api.github.com/rate_limit', {
+                headers: { 'Authorization': 'Bearer ' + GITHUB_TOKEN }
+            });
+            if (rl.ok) {
+                var rlData = await rl.json();
+                if (rlData.resources.core.remaining < 5) {
+                    var mins = Math.ceil((new Date(rlData.resources.core.reset*1000) - Date.now()) / 60000);
+                    throw new Error('Rate limit atingido. Aguarde ' + mins + 'min.');
+                }
+            }
+
+            setProgress('upload', 30, 'Preparando arquivo...');
+            var ts = Date.now();
+            var rnd = Math.random().toString(36).substring(2,8);
+            var ext = state.file.name.split('.').pop().toLowerCase();
+            var fileName = ts + '_' + rnd + '.' + ext;
+            var path = 'imagem/' + fileName;
+            var base64 = state.imageData.split(',')[1];
+
+            setProgress('upload', 50, 'Enviando para GitHub...');
+            var res = await fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + path, {
+                method: 'PUT',
+                headers: {
+                    'Accept': 'application/vnd.github+json',
+                    'Authorization': 'Bearer ' + GITHUB_TOKEN,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: 'Add: ' + fileName, content: base64 })
+            });
+
+            if (!res.ok) {
+                var err = await res.json();
+                if (res.status === 401) throw new Error('Token GitHub inválido.');
+                if (res.status === 403) throw new Error('Sem permissão. Verifique o scope do token.');
+                if (res.status === 404) throw new Error('Repositório não encontrado.');
+                throw new Error(err.message || 'Erro ' + res.status);
+            }
+
+            setProgress('upload', 90, 'Finalizando...');
+
+            state.imageUrl = 'https://raw.githubusercontent.com/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/main/' + path;
+
+            setProgress('upload', 100, 'Concluído!');
+            await sleep(400);
+
+            $('uploadProgress').classList.remove('show');
+            $('imageUrlField').value = state.imageUrl;
+            $('urlResult').classList.add('show');
+            $('uploadBtn').innerHTML = '<i class="fas fa-check"></i> Imagem enviada!';
+
+            showToast('Imagem hospedada com sucesso!', 'success');
+
+            // Advance to step 2
+            setTimeout(function() {
+                setStepState(1, 'done');
+                setStepState(2, 'active');
+                state.currentStep = 2;
+                $('generatePromptBtn').disabled = false;
+                $('step2Card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 500);
+
+        } catch (e) {
+            $('uploadProgress').classList.remove('show');
+            $('uploadBtn').disabled = false;
+            $('uploadBtn').innerHTML = '<i class="fas fa-upload"></i> Enviar para GitHub';
+            showToast('Erro: ' + e.message, 'error');
+        }
+    }
+
+    // ─── GENERATE PROMPT ──────────────────────────────────────────────────────
+    async function doGeneratePrompt() {
+        if (!GROQ_TOKEN) {
+            showToast('Configure a chave Groq!', 'error');
+            $('configModal').classList.add('open'); return;
+        }
+        if (!state.imageData) {
+            showToast('Nenhuma imagem carregada.', 'error'); return;
+        }
+
+        $('generatePromptBtn').disabled = true;
+        $('generatePromptBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando prompt...';
+        $('copyPromptBtn').style.display = 'none';
+        $('promptBox').className = 'prompt-box loading';
+        $('promptBox').innerHTML = '<i class="fas fa-robot fa-spin"></i> Groq AI analisando a imagem...';
+
+        try {
+            var mimeType = state.imageData.split(';')[0].split(':')[1];
+            var base64Data = state.imageData.split(',')[1];
+
+            var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + GROQ_TOKEN,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: GROQ_MODEL,
+                    messages: [
+                        {
+                            role: 'system',
+                            content: GROQ_SYSTEM_PROMPT
+                        },
+                        {
+                            role: 'user',
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: 'Analise este produto e gere o prompt para video TikTok Shop:'
+                                },
+                                {
+                                    type: 'image_url',
+                                    image_url: { url: 'data:' + mimeType + ';base64,' + base64Data }
+                                }
+                            ]
+                        }
+                    ],
+                    temperature: 0.75,
+                    max_tokens: 600
+                })
+            });
+
+            if (!res.ok) {
+                var err = await res.json();
+                if (res.status === 401) throw new Error('Chave Groq inválida.');
+                if (res.status === 429) throw new Error('Rate limit Groq. Aguarde um momento.');
+                throw new Error(err.error?.message || 'Erro Groq ' + res.status);
+            }
+
+            var data = await res.json();
+            var prompt = data.choices[0].message.content.trim();
+
+            // Cap to 1000 chars for video API
+            if (prompt.length > 1000) prompt = prompt.substring(0, 997) + '...';
+
+            state.prompt = prompt;
+
+            $('promptBox').className = 'prompt-box';
+            $('promptBox').textContent = prompt;
+            $('copyPromptBtn').style.display = 'inline-flex';
+
+            showToast('Prompt gerado!', 'success');
+
+            // Advance to step 3
+            setTimeout(function() {
+                setStepState(2, 'done');
+                setStepState(3, 'active');
+                state.currentStep = 3;
+                $('generateVideoBtn').disabled = false;
+                $('step3Card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 500);
+
+        } catch (e) {
+            $('promptBox').className = 'prompt-box empty';
+            $('promptBox').textContent = 'Erro ao gerar prompt: ' + e.message;
+            showToast('Erro Groq: ' + e.message, 'error');
+        } finally {
+            $('generatePromptBtn').disabled = false;
+            $('generatePromptBtn').innerHTML = '<i class="fas fa-robot"></i> Gerar Prompt com Groq AI';
+        }
+    }
+
+    // ─── GENERATE VIDEO ───────────────────────────────────────────────────────
+    async function doGenerateVideo() {
+        if (!VIDEOGEN_TOKEN) {
+            showToast('Configure a chave VideoGen!', 'error');
+            $('configModal').classList.add('open'); return;
+        }
+        if (!state.prompt) { showToast('Gere o prompt primeiro!', 'error'); return; }
+        if (!state.imageUrl) { showToast('Faça o upload da imagem primeiro!', 'error'); return; }
+
+        $('generateVideoBtn').disabled = true;
+        $('generateVideoBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando...';
+        $('videoResultWrap').classList.remove('show');
+        $('videoStatusWrap').style.display = 'block';
+        $('videoProgress').classList.add('show');
+        setVideoStatus('processing', 'Enviando requisição...');
+
+        try {
+            var res = await fetch(VIDEOGEN_URL + '/generate', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + VIDEOGEN_TOKEN,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: state.selectedModel,
+                    prompt: state.prompt,
+                    image_url: state.imageUrl,
+                    duration: state.duration,
+                    resolution: '1080p',
+                    camera_fixed: false
+                })
+            });
+
+            if (!res.ok) {
+                var err = await res.json().catch(function() { return {}; });
+                if (res.status === 401) throw new Error('Chave VideoGen inválida.');
+                if (res.status === 429) throw new Error('Rate limit VideoGen. Aguarde.');
+                if (res.status === 400) throw new Error('Requisição inválida: ' + (err.message || ''));
+                throw new Error('Erro ' + res.status + ': ' + (err.message || ''));
+            }
+
+            var data = await res.json();
+            var generationId = data.generation_id;
+            var statusUrl = data.status_url;
+
+            setVideoStatus('processing', 'Gerando vídeo (ID: ' + generationId + ')');
+            showToast('Vídeo em geração! Isso pode levar alguns minutos...', 'success');
+
+            // Poll
+            await pollVideo(generationId, statusUrl);
+
+        } catch (e) {
+            setVideoStatus('error', e.message);
+            showToast('Erro VideoGen: ' + e.message, 'error');
+            $('generateVideoBtn').disabled = false;
+            $('generateVideoBtn').innerHTML = '<i class="fas fa-film"></i> Gerar Vídeo';
+            $('videoProgress').classList.remove('show');
+        }
+    }
+
+    async function pollVideo(genId, statusUrl) {
+        var maxAttempts = 72; // 6 min
+        var attempt = 0;
+
+        // Garante URL absoluta — se statusUrl for relativa, prefixamos com a base da API
+        function buildStatusUrl(su, id) {
+            if (!su) return VIDEOGEN_URL + '/status/' + id;
+            if (su.startsWith('http')) return su;
+            // relativa: remove barra dupla e prefixar
+            return VIDEOGEN_URL.replace(/\/api\/v1.*/, '') + (su.startsWith('/') ? '' : '/') + su;
+        }
+
+        var finalUrl = buildStatusUrl(statusUrl, genId);
+        console.log('Polling URL:', finalUrl);
+
+        while (attempt < maxAttempts) {
+            attempt++;
+            await sleep(5000);
+
+            try {
+                var res = await fetch(finalUrl, {
+                    headers: { 'Authorization': 'Bearer ' + VIDEOGEN_TOKEN }
+                });
+
+                if (!res.ok) {
+                    console.warn('Poll HTTP ' + res.status + ' na tentativa ' + attempt);
+                    continue;
+                }
+
+                var data = await res.json();
+                var status = data.status;
+
+                if (status === 'completed') {
+                    $('videoProgress').classList.remove('show');
+                    setVideoStatus('done', 'Vídeo pronto!');
+
+                    var videoUrl = data.video_url;
+                    var video = $('generatedVideo');
+                    video.src = videoUrl;
+                    video.load();
+                    $('downloadVideoBtn').href = videoUrl;
+                    $('manualVideoUrl').value = videoUrl;
+                    $('manualUrlWrap').style.display = 'block';
+                    $('videoResultWrap').classList.add('show');
+
+                    setStepState(3, 'done');
+                    showToast('Vídeo gerado com sucesso! 🎬', 'success');
+
+                    $('generateVideoBtn').innerHTML = '<i class="fas fa-film"></i> Gerar Vídeo';
+                    return;
+
+                } else if (status === 'failed') {
+                    throw new Error('Geração falhou. Tente novamente.');
+                } else {
+                    setVideoStatus('processing', 'Processando... (tentativa ' + attempt + '/' + maxAttempts + ')');
+                }
+            } catch (e) {
+                if (e.message.includes('falhou')) throw e;
+                if (e.name === 'TypeError' && e.message.includes('fetch')) {
+                    // CORS ou network error — mostra aviso e pede URL manual
+                    setVideoStatus('processing', 'Aguardando vídeo... (verificando a cada 5s)');
+                    console.warn('Poll fetch error (provável CORS file://):', e);
+                } else {
+                    console.warn('Poll error:', e);
+                }
+            }
+        }
+
+        // Timeout — mostra campo para colar URL manualmente
+        $('videoProgress').classList.remove('show');
+        $('manualUrlWrap').style.display = 'block';
+        setVideoStatus('processing', 'Tempo esgotado. Cole a URL do vídeo abaixo manualmente.');
+        showToast('Cole a URL do vídeo manualmente.', 'warning');
+        $('generateVideoBtn').disabled = false;
+        $('generateVideoBtn').innerHTML = '<i class="fas fa-film"></i> Gerar Vídeo';
+    }
+
+    function resetVideoResult() {
+        $('videoResultWrap').classList.remove('show');
+        $('videoProgress').classList.remove('show');
+        $('videoStatusWrap').style.display = 'none';
+        $('manualUrlWrap').style.display = 'none';
+        $('manualVideoUrl').value = '';
+        $('generateVideoBtn').disabled = false;
+        $('generateVideoBtn').innerHTML = '<i class="fas fa-film"></i> Gerar Vídeo';
+        var video = $('generatedVideo');
+        video.pause(); video.src = '';
+    }
+
+    // ─── CONFIG ───────────────────────────────────────────────────────────────
+    function saveConfig() {
+        var gh = $('githubTokenInput').value.trim();
+        var gr = $('groqTokenInput').value.trim();
+        var vg = $('videogenTokenInput').value.trim();
+
+        if (gh) { GITHUB_TOKEN = gh; localStorage.setItem('gh_token', gh); }
+        if (gr) { GROQ_TOKEN = gr; localStorage.setItem('groq_token', gr); }
+        if (vg) { VIDEOGEN_TOKEN = vg; localStorage.setItem('vg_token', vg); }
+
+        $('configModal').classList.remove('open');
+        showToast('Configurações salvas!', 'success');
+    }
+
+    async function testGithub() {
+        var t = $('githubTokenInput').value.trim();
+        if (!t) { showToast('Digite o token GitHub!', 'error'); return; }
+        $('testGithubBtn').disabled = true; $('testGithubBtn').textContent = '...';
+        try {
+            var r = await fetch('https://api.github.com/user', { headers: { 'Authorization': 'Bearer ' + t } });
+            var d = await r.json();
+            if (r.ok) showToast('GitHub OK — @' + d.login, 'success');
+            else throw new Error(d.message);
+        } catch (e) { showToast('GitHub Error: ' + e.message, 'error'); }
+        $('testGithubBtn').disabled = false; $('testGithubBtn').textContent = 'Testar';
+    }
+
+    async function testGroq() {
+        var t = $('groqTokenInput').value.trim();
+        if (!t) { showToast('Digite a chave Groq!', 'error'); return; }
+        $('testGroqBtn').disabled = true; $('testGroqBtn').textContent = '...';
+        try {
+            var r = await fetch('https://api.groq.com/openai/v1/models', { headers: { 'Authorization': 'Bearer ' + t } });
+            if (r.ok) showToast('Groq OK — chave válida!', 'success');
+            else { var d = await r.json(); throw new Error(d.error?.message || 'Inválida'); }
+        } catch (e) { showToast('Groq Error: ' + e.message, 'error'); }
+        $('testGroqBtn').disabled = false; $('testGroqBtn').textContent = 'Testar';
+    }
+
+    async function testVideogen() {
+        var t = $('videogenTokenInput').value.trim();
+        if (!t) { showToast('Digite a chave VideoGen!', 'error'); return; }
+        $('testVideogenBtn').disabled = true; $('testVideogenBtn').textContent = '...';
+        try {
+            var r = await fetch(VIDEOGEN_URL + '/user', { headers: { 'Authorization': 'Bearer ' + t } });
+            var d = await r.json();
+            if (r.ok) showToast('VideoGen OK — créditos: ' + (d.credits ?? '?'), 'success');
+            else throw new Error(d.message || 'Inválida');
+        } catch (e) { showToast('VideoGen Error: ' + e.message, 'error'); }
+        $('testVideogenBtn').disabled = false; $('testVideogenBtn').textContent = 'Testar';
+    }
+
+    // ─── STEP STATE ───────────────────────────────────────────────────────────
+    function setStepState(step, s) {
+        var card = $('step' + step + 'Card');
+        var circle = $('circle' + step);
+        var dot = $('dot' + step);
+        var line = step < 3 ? $('line' + step) : null;
+
+        card.classList.remove('active', 'done', 'locked');
+        circle.classList.remove('active', 'done');
+        dot.classList.remove('active', 'done');
+
+        if (s === 'active') {
+            card.classList.add('active');
+            circle.classList.add('active');
+            dot.classList.add('active');
+            circle.innerHTML = step === 1 ? '<i class="fas fa-image"></i>' :
+                               step === 2 ? '<i class="fas fa-robot"></i>' :
+                               '<i class="fas fa-film"></i>';
+        } else if (s === 'done') {
+            card.classList.add('done');
+            circle.classList.add('done');
+            dot.classList.add('done');
+            circle.innerHTML = '<i class="fas fa-check"></i>';
+            if (line) { line.classList.add('done'); line.classList.remove('active'); }
+        } else {
+            card.classList.add('locked');
+            circle.innerHTML = step === 1 ? '<i class="fas fa-image"></i>' :
+                               step === 2 ? '<i class="fas fa-robot"></i>' :
+                               '<i class="fas fa-film"></i>';
+        }
+
+        // Line before this step
+        if (step > 1) {
+            var prevLine = $('line' + (step-1));
+            if (prevLine) {
+                if (s === 'active') { prevLine.classList.add('active'); prevLine.classList.remove('done'); }
+                else if (s === 'done') { prevLine.classList.add('done'); prevLine.classList.remove('active'); }
+            }
+        }
+    }
+
+    // ─── VIDEO STATUS ─────────────────────────────────────────────────────────
+    function setVideoStatus(type, text) {
+        var badge = $('videoStatusBadge');
+        badge.className = 'status-badge ' + type;
+        $('videoStatusText').textContent = text;
+        $('videoProgressText').textContent = text;
+    }
+
+    // ─── UTILS ────────────────────────────────────────────────────────────────
+    function setProgress(type, pct, text) {
+        if (type === 'upload') {
+            $('uploadBar').style.width = pct + '%';
+            $('uploadText').textContent = text;
+            $('uploadPct').textContent = pct + '%';
+        }
+    }
+
+    function formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+        return (bytes/(1024*1024)).toFixed(2) + ' MB';
+    }
+
+    function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+    async function copyText(text, msg) {
+        try {
+            await navigator.clipboard.writeText(text);
+            showToast(msg || 'Copiado!', 'success');
+        } catch (e) {
+            // Fallback
+            var el = document.createElement('textarea');
+            el.value = text; el.style.position = 'fixed'; el.style.opacity = '0';
+            document.body.appendChild(el); el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast(msg || 'Copiado!', 'success');
+        }
+    }
+
+    var toastTimer;
+    function showToast(msg, type) {
+        clearTimeout(toastTimer);
+        var t = $('toast');
+        var icon = t.querySelector('.toast-icon');
+        t.className = 'toast ' + (type || 'success');
+        $('toastMsg').textContent = msg;
+        icon.className = 'toast-icon fas ' +
+            (type === 'error' ? 'fa-times-circle' :
+             type === 'warning' ? 'fa-exclamation-triangle' : 'fa-check-circle');
+        setTimeout(function() { t.classList.add('show'); }, 10);
+        toastTimer = setTimeout(function() { t.classList.remove('show'); }, 3500);
+    }
+
+    // ─── START ────────────────────────────────────────────────────────────────
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+</script>
+</body>
+</html>
