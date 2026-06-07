@@ -617,8 +617,40 @@
             <div class="card-step-num">2</div>
             <div>
                 <div class="card-title">Gerar Prompt com IA</div>
-                <div class="card-subtitle">O Groq analisa a imagem e cria o prompt ideal para o vídeo</div>
+                <div class="card-subtitle">Adicione contexto para um prompt mais preciso e criativo</div>
             </div>
+        </div>
+
+        <!-- Descrição do produto -->
+        <div style="margin-bottom:1rem;">
+            <label style="font-size:0.8rem;color:var(--muted);font-weight:600;display:block;margin-bottom:0.4rem;">
+                <i class="fas fa-tag"></i> Descrição do produto <span style="color:var(--primary)">(recomendado)</span>
+            </label>
+            <textarea id="productDescription" rows="3"
+                placeholder="Ex: Creme capilar marca X · R$49,90 · Define cachos e elimina frizz em 5min · Público: mulheres 20-35 anos"
+                style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.7rem;color:var(--text);font-size:0.85rem;resize:vertical;font-family:inherit;box-sizing:border-box;"></textarea>
+        </div>
+
+        <!-- Imagem de referência -->
+        <div style="margin-bottom:1.2rem;">
+            <label style="font-size:0.8rem;color:var(--muted);font-weight:600;display:block;margin-bottom:0.4rem;">
+                <i class="fas fa-camera"></i> Foto de referência de estilo <span style="opacity:0.6">(opcional)</span>
+            </label>
+            <div id="refDropZone" style="border:2px dashed var(--border);border-radius:10px;padding:1rem;text-align:center;cursor:pointer;transition:border-color 0.2s;background:var(--surface);">
+                <div id="refPreviewWrap" style="display:none;flex-direction:column;align-items:center;gap:0.4rem;">
+                    <img id="refPreview" style="max-height:120px;border-radius:8px;" />
+                    <div style="font-size:0.75rem;color:var(--muted);" id="refFileName"></div>
+                    <button class="btn btn-secondary btn-sm" id="removeRefBtn" style="font-size:0.7rem;padding:0.2rem 0.7rem;">
+                        <i class="fas fa-times"></i> Remover
+                    </button>
+                </div>
+                <div id="refPlaceholder">
+                    <i class="fas fa-image" style="font-size:1.6rem;color:var(--muted);display:block;margin-bottom:0.4rem;"></i>
+                    <div style="font-size:0.82rem;color:var(--muted);">Clique ou arraste um vídeo/foto de referência de estilo</div>
+                    <div style="font-size:0.72rem;color:var(--muted);opacity:0.6;margin-top:0.2rem;">Ex: screenshot de UGC viral que você quer imitar</div>
+                </div>
+            </div>
+            <input type="file" id="refImageInput" accept="image/*" style="display:none;">
         </div>
 
         <div class="prompt-box empty" id="promptBox">
