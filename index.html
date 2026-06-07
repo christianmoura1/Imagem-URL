@@ -923,6 +923,29 @@
         });
         $('generateVideoBtn').addEventListener('click', doGenerateVideo);
         $('newVideoBtn').addEventListener('click', resetVideoResult);
+        // Ref image upload
+        var refDrop = $('refDropZone');
+        var refInput = $('refImageInput');
+        refDrop.addEventListener('click', function(e) {
+            if (e.target.id !== 'removeRefBtn' && !e.target.closest('#removeRefBtn')) refInput.click();
+        });
+        refInput.addEventListener('change', function() {
+            if (this.files[0]) loadRefImage(this.files[0]);
+        });
+        refDrop.addEventListener('dragover', function(e) { e.preventDefault(); refDrop.style.borderColor = 'var(--primary)'; });
+        refDrop.addEventListener('dragleave', function() { refDrop.style.borderColor = 'var(--border)'; });
+        refDrop.addEventListener('drop', function(e) {
+            e.preventDefault(); refDrop.style.borderColor = 'var(--border)';
+            if (e.dataTransfer.files[0]) loadRefImage(e.dataTransfer.files[0]);
+        });
+        $('removeRefBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            state.refImageData = null;
+            $('refPreviewWrap').style.display = 'none';
+            $('refPlaceholder').style.display = 'block';
+            refInput.value = '';
+        });
+
         $('loadManualVideoBtn').addEventListener('click', function() {
             var url = $('manualVideoUrl').value.trim();
             if (!url) { showToast('Cole a URL do vídeo!', 'error'); return; }
@@ -1084,6 +1107,22 @@
         }
     }
 
+    // ─── LOAD REF IMAGE ──────────────────────────────────────────────────────
+    function loadRefImage(file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            state.refImageData = e.target.result;
+            var img = $('refPreview');
+            img.src = e.target.result;
+            $('refFileName').textContent = file.name;
+            $('refPreviewWrap').style.display = 'block';
+            $('refPlaceholder').style.display = 'none';
+            $('refDropZone').style.borderColor = 'var(--primary)';
+            showToast('Referência carregada!', 'success');
+        };
+        reader.readAsDataURL(file);
+    }
+
     // ─── GENERATE PROMPT ──────────────────────────────────────────────────────
     async function doGeneratePrompt() {
         if (!GROQ_TOKEN) {
@@ -1104,6 +1143,31 @@
             var mimeType = state.imageData.split(';')[0].split(':')[1];
             var base64Data = state.imageData.split(',')[1];
 
+            // Monta o contexto textual do usuário
+            var productDesc = ($('productDescription').value || '').trim();
+            var userTextParts = [];
+            userTextParts.push('IMAGEM DO PRODUTO: analise o produto na imagem acima.');
+            if (productDesc) {
+                userTextParts.push('DESCRICAO DO PRODUTO: ' + productDesc);
+            }
+            if (state.refImageData) {
+                userTextParts.push('IMAGEM DE REFERENCIA DE ESTILO: a segunda imagem mostra o estilo visual, enquadramento e ambiente que voce deve replicar no prompt.');
+            }
+            userTextParts.push('Gere agora o prompt otimizado para TikTok Shop seguindo todas as regras do sistema.');
+
+            // Monta o array de content do user
+            var userContent = [
+                { type: 'text', text: userTextParts.join('\n\n') },
+                { type: 'image_url', image_url: { url: 'data:' + mimeType + ';base64,' + base64Data } }
+            ];
+
+            // Adiciona imagem de referência se existir
+            if (state.refImageData) {
+                var refMime = state.refImageData.split(';')[0].split(':')[1];
+                var refBase64 = state.refImageData.split(',')[1];
+                userContent.push({ type: 'image_url', image_url: { url: 'data:' + refMime + ';base64,' + refBase64 } });
+            }
+
             var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
                 headers: {
@@ -1113,26 +1177,11 @@
                 body: JSON.stringify({
                     model: GROQ_MODEL,
                     messages: [
-                        {
-                            role: 'system',
-                            content: GROQ_SYSTEM_PROMPT
-                        },
-                        {
-                            role: 'user',
-                            content: [
-                                {
-                                    type: 'text',
-                                    text: 'Analise este produto e gere o prompt para video TikTok Shop:'
-                                },
-                                {
-                                    type: 'image_url',
-                                    image_url: { url: 'data:' + mimeType + ';base64,' + base64Data }
-                                }
-                            ]
-                        }
+                        { role: 'system', content: GROQ_SYSTEM_PROMPT },
+                        { role: 'user', content: userContent }
                     ],
-                    temperature: 0.75,
-                    max_tokens: 600
+                    temperature: 0.85,
+                    max_tokens: 800
                 })
             });
 
