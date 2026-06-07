@@ -788,6 +788,7 @@
     var GITHUB_REPO  = 'Imagem-URL';
     var GROQ_MODEL   = 'meta-llama/llama-4-scout-17b-16e-instruct';
     var VIDEOGEN_URL = 'https://videogenapi.com/api/v1';
+    var PROXY_URL   = 'https://superagent-cbc81e72.base44.app/functions/videogenProxy'; // Proxy server-side (sem CORS)
 
     // ─── GROQ PROMPT RULES ────────────────────────────────────────────────────
     var GROQ_SYSTEM_PROMPT = [
@@ -1192,19 +1193,20 @@
         setVideoStatus('processing', 'Enviando requisição...');
 
         try {
-            var res = await fetch(VIDEOGEN_URL + '/generate', {
+            var res = await fetch(PROXY_URL, {
                 method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + VIDEOGEN_TOKEN,
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    model: state.selectedModel,
-                    prompt: state.prompt,
-                    image_url: state.imageUrl,
-                    duration: state.duration,
-                    resolution: '1080p',
-                    camera_fixed: false
+                    action: 'generate',
+                    videogen_token: VIDEOGEN_TOKEN,
+                    payload: {
+                        model: state.selectedModel,
+                        prompt: state.prompt,
+                        image_url: state.imageUrl,
+                        duration: state.duration,
+                        resolution: '1080p',
+                        camera_fixed: false
+                    }
                 })
             });
 
@@ -1255,8 +1257,15 @@
             await sleep(5000);
 
             try {
-                var res = await fetch(finalUrl, {
-                    headers: { 'Authorization': 'Bearer ' + VIDEOGEN_TOKEN }
+                var res = await fetch(PROXY_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'status',
+                        videogen_token: VIDEOGEN_TOKEN,
+                        status_url: finalUrl,
+                        generation_id: genId
+                    })
                 });
 
                 if (!res.ok) {
@@ -1368,7 +1377,11 @@
         if (!t) { showToast('Digite a chave VideoGen!', 'error'); return; }
         $('testVideogenBtn').disabled = true; $('testVideogenBtn').textContent = '...';
         try {
-            var r = await fetch(VIDEOGEN_URL + '/user', { headers: { 'Authorization': 'Bearer ' + t } });
+            var r = await fetch(PROXY_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'user', videogen_token: t })
+            });
             var d = await r.json();
             if (r.ok) showToast('VideoGen OK — créditos: ' + (d.credits ?? '?'), 'success');
             else throw new Error(d.message || 'Inválida');
